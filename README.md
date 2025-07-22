@@ -1,12 +1,12 @@
-# Trend Compass
+# Trend Compass AI
 
-An AI-powered trend forecasting and audience insights tool built for the hackathon to showcase the combined power of Qloo's cultural affinity data and Gemini LLM.
+An AI-powered trend forecasting and audience insights tool built to showcase the combined power of Qloo's cultural affinity data and Gemini LLM.
 
 ![Trend Compass Screenshot](https://via.placeholder.com/800x400?text=Trend+Compass+Screenshot)
 
 ## 🚀 Live Demo
 
-[Check out the live demo here](#) (Add your demo URL when deployed)
+<!-- [Check out the live demo here](#) (Add your demo URL when deployed) -->
 
 ## ✨ Features
 
