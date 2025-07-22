@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trend Compass - AI-Powered Trend Forecasting</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo">
+                    <i class="fas fa-compass"></i>
+                    <span>Trend Compass</span>
+                </div>
+                <p class="tagline">AI-Powered Trend Forecasting & Audience Insights</p>
+            </div>
+            <nav>
+                <button class="tab-button active" data-tab="trend-tab">Trend Analysis</button>
+                <button class="tab-button" data-tab="audience-tab">Audience Insights</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Trend Analysis Tab -->
+            <section id="trend-tab" class="tab-content active">
+                <div class="input-section">
+                    <h2>Analyze a Trend</h2>
+                    <p>Enter a trend, topic, or concept to analyze its cultural impact and future trajectory.</p>
+                    
+                    <form id="trend-form">
+                        <div class="input-group">
+                            <label for="trend-query">Trend or Topic</label>
+                            <input type="text" id="trend-query" placeholder="E.g., Sustainable fashion, AI in healthcare, Plant-based diets" required>
+                        </div>
+                        
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="trend-industry">Industry (Optional)</label>
+                                <input type="text" id="trend-industry" placeholder="E.g., Fashion, Technology, Food">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="trend-timeframe">Timeframe (Optional)</label>
+                                <select id="trend-timeframe">
+                                    <option value="">Select a timeframe</option>
+                                    <option value="Next 3 months">Next 3 months</option>
+                                    <option value="Next 6 months">Next 6 months</option>
+                                    <option value="Next 1 year">Next 1 year</option>
+                                    <option value="Next 2-3 years">Next 2-3 years</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="primary-button" id="analyze-trend-button">
+                            <span class="button-text">Analyze Trend</span>
+                            <span class="button-icon"><i class="fas fa-arrow-right"></i></span>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="results-section" id="trend-results">
+                    <!-- Results will be dynamically inserted here by JS -->
+                </div>
+            </section>
+            
+            <!-- Audience Insights Tab -->
+            <section id="audience-tab" class="tab-content">
+                <div class="input-section">
+                    <h2>Discover Audience Insights</h2>
+                    <p>Describe your target audience to uncover their cultural affinities and preferences.</p>
+                    
+                    <form id="audience-form">
+                        <div class="input-group">
+                            <label for="audience-description">Target Audience</label>
+                            <input type="text" id="audience-description" placeholder="E.g., Gen Z fashion enthusiasts, Urban professionals 25-35, Eco-conscious parents" required>
+                        </div>
+                        
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="audience-product">Product Category (Optional)</label>
+                                <input type="text" id="audience-product" placeholder="E.g., Footwear, Streaming content, Home goods">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="audience-region">Region (Optional)</label>
+                                <select id="audience-region">
+                                    <option value="">Select a region</option>
+                                    <option value="North America">North America</option>
+                                    <option value="Europe">Europe</option>
+                                    <option value="Asia">Asia</option>
+                                    <option value="Latin America">Latin America</option>
+                                    <option value="Global">Global</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="primary-button" id="analyze-audience-button">
+                            <span class="button-text">Get Insights</span>
+                            <span class="button-icon"><i class="fas fa-arrow-right"></i></span>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="results-section" id="audience-results">
+                    <!-- Results will be dynamically inserted here by JS -->
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Trend Compass • Powered by Qloo Cultural Affinity Data & Gemini AI</p>
+            <div class="footer-links">
+                <a href="#" class="github-link" target="_blank">
+                    <i class="fab fa-github"></i>
+                    <span>GitHub</span>
+                </a>
+                <span class="separator">•</span>
+                <a href="#" class="about-link">About</a>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <p>Analyzing with Trend Compass...</p>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
