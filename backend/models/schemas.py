@@ -16,7 +16,8 @@ class TrendAnalysisRequest(BaseModel):
         ..., 
         description="The trend or topic to analyze",
         min_length=3,
-        max_length=500
+        max_length=200,
+        example="sustainable fashion trends"
     )
     industry: Optional[str] = Field(
         None,
@@ -39,7 +40,8 @@ class AudienceInsightRequest(BaseModel):
         ...,
         description="Description of the target audience",
         min_length=3,
-        max_length=500
+        max_length=200,
+        example="Gen Z tech enthusiasts"
     )
     product_category: Optional[str] = Field(
         None,
