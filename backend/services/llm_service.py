@@ -1,38 +1,69 @@
 """
-llm_service.py - Google's Gemini API Integration Service
-
-This file handles communication with the Gemini LLM API,
-managing prompt construction, API calls, and response parsing.
+Gemini AI service - Talks to Google's AI to analyze trends
 """
 
 import os
 import json
-import google.generativeai as genai
-from typing import Dict, Any, List, Optional
+from pathlib import Path
+from dotenv import load_dotenv
+try:
+    import google.generativeai as genai
+    GENAI_AVAILABLE = True
+except ImportError:
+    GENAI_AVAILABLE = False
+    print("Warning: google-generativeai not available, using fallback responses")
+
+from typing import Dict, Any, Optional
 from datetime import datetime
 
-# Initialize the Gemini API with credentials from environment variables
+# Load environment variables from .env file in parent directory
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
+# Get Gemini API key from environment
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable not set. Please set it in your .env file.")
-
-genai.configure(api_key=GEMINI_API_KEY)
+if GENAI_AVAILABLE and GEMINI_API_KEY:
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+    except Exception as e:
+        print(f"Warning: Could not configure Gemini API: {e}")
+        GENAI_AVAILABLE = False
 
 class GeminiService:
-    """Service for interacting with Google's Gemini LLM API."""
+    """Handles AI analysis - with fallback for demo purposes"""
     
     def __init__(self):
-        """Initialize the Gemini service with model configuration."""
-        self.model = genai.GenerativeModel(
-            model_name="gemini-pro",  # Using Gemini Pro model
-            generation_config={
-                "temperature": 0.7,
-                "top_p": 0.95,
-                "top_k": 40,
-                "max_output_tokens": 2048,
-            }
-        )
+        """Setup Gemini AI model with fallback"""
+        self.has_gemini = GENAI_AVAILABLE and GEMINI_API_KEY
+        
+        if self.has_gemini:
+            try:
+                # Try to create model - use simpler approach
+                self.model = genai.GenerativeModel("gemini-1.5-flash")  # Try different model
+                print("✅ Gemini AI configured successfully")
+            except Exception as e:
+                print(f"⚠️  Gemini setup failed: {e}")
+                self.has_gemini = False
+        
+        if not self.has_gemini:
+            print("📝 Using demo responses for hackathon")
+    
+    async def analyze_trend(self, query: str, qloo_data: Dict[str, Any], 
+                          industry: Optional[str] = None, 
+                          timeframe: Optional[str] = None) -> Dict[str, Any]:
+        """Get trend analysis - real AI or demo data"""
+        
+        if self.has_gemini:
+            try:
+                prompt = self._create_trend_prompt(query, qloo_data, industry, timeframe)
+                response = await self._call_gemini_ai(prompt)
+                return self._process_trend_response(response, query)
+            except Exception as e:
+                print(f"Gemini failed, using demo: {e}")
+        
+        # Fallback demo response for hackathon
+        return self._get_demo_trend_analysis(query, qloo_data, industry, timeframe)
     
     async def analyze_trend(self, query: str, qloo_data: Dict[str, Any], 
                           industry: Optional[str] = None, 
@@ -154,12 +185,12 @@ class GeminiService:
               "source": "qloo|llm|combined"
             }},
             // more insights...
-          ],
-          "recommendations": [
-            "first recommendation",
-            // more recommendations...
-          ]
-        }}
+            ],
+            "recommendations": [
+                  "first recommendation",
+                  // more recommendations...
+            ]
+      }}
         
         IMPORTANT: Return ONLY the JSON response, no other text.
         """

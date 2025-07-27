@@ -1,8 +1,5 @@
 """
-trends.py - API Endpoints for Trend and Audience Analysis
-
-This file defines the FastAPI endpoints that handle trend analysis
-and audience insight requests, connecting the frontend to backend services.
+API routes - Defines the trend and audience analysis endpoints
 """
 
 import json

@@ -1,21 +1,24 @@
 """
-qloo_service.py - Qloo API Integration Service
-
-This file handles communication with the Qloo API for cultural affinity data,
-managing API calls, authentication, and data parsing.
+Qloo API service - Gets cultural data from Qloo
 """
 
 import os
 import httpx
 import json
-from typing import Dict, Any, List, Optional
-import asyncio
+from pathlib import Path
+from dotenv import load_dotenv
+from typing import Dict, Any, Optional
 
-# Get Qloo API key from environment variables
+# Load environment variables from .env file in parent directory
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
+# Get Qloo settings from environment
 QLOO_API_KEY = os.getenv("QLOO_API_KEY")
+QLOO_API_URL = os.getenv("QLOO_API_URL", "https://hackathon.api.qloo.com")
 
 if not QLOO_API_KEY:
-    raise ValueError("QLOO_API_KEY environment variable not set. Please set it in your .env file.")
+    raise ValueError("QLOO_API_KEY not found in .env file!")
 
 class QlooService:
     """Service for interacting with the Qloo cultural affinity API."""
@@ -23,7 +26,7 @@ class QlooService:
     def __init__(self):
         """Initialize the Qloo service with API configuration."""
         self.api_key = QLOO_API_KEY
-        self.base_url = "https://api.qloo.com/v1"  # Example URL - replace with actual Qloo API URL
+        self.base_url = QLOO_API_URL
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -31,81 +34,79 @@ class QlooService:
         }
     
     async def get_trend_data(self, query: str, industry: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Get cultural affinity data related to a trend or topic.
-        
-        Args:
-            query: The trend or topic to analyze
-            industry: Optional industry context for filtering data
+        """Get trend data from Qloo API"""
+        try:
+            # Call the actual Qloo API
+            endpoint = f"{self.base_url}/trends/analyze"
             
-        Returns:
-            Dictionary containing cultural affinity data from Qloo
-        """
-        # In a real implementation, we would call the actual Qloo API
-        # For this prototype, we'll simulate the API call
-        
-        # Note: Replace this with real API call in production
-        # endpoint = f"{self.base_url}/trends/analyze"
-        # async with httpx.AsyncClient() as client:
-        #     response = await client.post(
-        #         endpoint,
-        #         headers=self.headers,
-        #         json={
-        #             "query": query,
-        #             "industry": industry
-        #         },
-        #         timeout=30.0
-        #     )
-        #     if response.status_code == 200:
-        #         return response.json()
-        #     else:
-        #         print(f"Qloo API error: {response.status_code} - {response.text}")
-        #         return self._get_fallback_trend_data(query)
-        
-        # For the prototype, we'll use simulated data
-        # This simulates a 1-second API call latency
-        await asyncio.sleep(1)
-        return self._get_simulated_trend_data(query, industry)
+            # Prepare the request data
+            request_data = {"query": query}
+            if industry:
+                request_data["industry"] = industry
+                
+            # Make the API call
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    endpoint,
+                    headers=self.headers,
+                    json=request_data,
+                    timeout=30.0
+                )
+                
+                # Log the request for debugging
+                print(f"Qloo API request to {endpoint}: {request_data}")
+                
+                # Process the response
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    print(f"Qloo API error: {response.status_code} - {response.text}")
+                    # Fall back to simulated data if API call fails
+                    return self._get_fallback_trend_data(query)
+                    
+        except Exception as e:
+            # Log the error and fall back to simulated data
+            print(f"Error calling Qloo API: {str(e)}")
+            return self._get_fallback_trend_data(query)
     
     async def get_audience_data(self, audience: str, product_category: Optional[str] = None,
                               region: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Get cultural affinity data related to an audience.
-        
-        Args:
-            audience: Description of the target audience
-            product_category: Optional product or content category
-            region: Optional geographic region
+        """Get audience insights data from Qloo API"""
+        try:
+            # Call the actual Qloo API
+            endpoint = f"{self.base_url}/audiences/analyze"
             
-        Returns:
-            Dictionary containing audience affinity data from Qloo
-        """
-        # In a real implementation, we would call the actual Qloo API
-        # For this prototype, we'll simulate the API call
-        
-        # Note: Replace this with real API call in production
-        # endpoint = f"{self.base_url}/audiences/analyze"
-        # async with httpx.AsyncClient() as client:
-        #     response = await client.post(
-        #         endpoint,
-        #         headers=self.headers,
-        #         json={
-        #             "audience": audience,
-        #             "product_category": product_category,
-        #             "region": region
-        #         },
-        #         timeout=30.0
-        #     )
-        #     if response.status_code == 200:
-        #         return response.json()
-        #     else:
-        #         print(f"Qloo API error: {response.status_code} - {response.text}")
-        #         return self._get_fallback_audience_data(audience)
-        
-        # For the prototype, we'll use simulated data
-        # This simulates a 1-second API call latency
-        await asyncio.sleep(1)
-        return self._get_simulated_audience_data(audience, product_category, region)
+            # Prepare the request data
+            request_data = {"audience": audience}
+            if product_category:
+                request_data["product_category"] = product_category
+            if region:
+                request_data["region"] = region
+                
+            # Make the API call
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    endpoint,
+                    headers=self.headers,
+                    json=request_data,
+                    timeout=30.0
+                )
+                
+                # Log the request for debugging
+                print(f"Qloo API request to {endpoint}: {request_data}")
+                
+                # Process the response
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    print(f"Qloo API error: {response.status_code} - {response.text}")
+                    # Fall back to simulated data if API call fails
+                    return self._get_fallback_audience_data(audience)
+                    
+        except Exception as e:
+            # Log the error and fall back to simulated data
+            print(f"Error calling Qloo API: {str(e)}")
+            return self._get_fallback_audience_data(audience)
     
     def _get_simulated_trend_data(self, query: str, industry: Optional[str] = None) -> Dict[str, Any]:
         """
