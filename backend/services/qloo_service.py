@@ -18,7 +18,9 @@ QLOO_API_KEY = os.getenv("QLOO_API_KEY")
 QLOO_API_URL = os.getenv("QLOO_API_URL", "https://hackathon.api.qloo.com")
 
 if not QLOO_API_KEY:
-    raise ValueError("QLOO_API_KEY not found in .env file!")
+    print("⚠️ QLOO_API_KEY not found in .env file, using demo mode")
+else:
+    print(f"🎯 Qloo API configured with hackathon URL: {QLOO_API_URL}")
 
 class QlooService:
     """Service for interacting with the Qloo cultural affinity API."""
@@ -32,6 +34,11 @@ class QlooService:
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
+        
+        if self.api_key and self.api_key != "demo_key_for_hackathon":
+            print(f"🚀 Qloo service initialized with real API key for {self.base_url}")
+        else:
+            print("🚀 Qloo service in demo mode (add real QLOO_API_KEY for live data)")
     
     async def get_trend_data(self, query: str, industry: Optional[str] = None) -> Dict[str, Any]:
         """Get trend data from Qloo API"""

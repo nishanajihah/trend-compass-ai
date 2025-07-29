@@ -3,6 +3,15 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# 🔒 Private Developer Tools (DO NOT COMMIT)
+private-dev-tools/
+*api-demo.html
+
+# Environment variables with API keys
+.env
+.env.local
+.env.production
+
 # C extensions
 *.so
 

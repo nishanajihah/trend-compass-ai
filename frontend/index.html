@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🔮 Trend Compass - AI-Powered Trend Forecasting</title>
+    <title>Trend Compass - AI-Powered Trend Forecasting</title>
     
-    <!-- Stylesheets - Modular CSS Architecture -->
-    <link rel="stylesheet" href="css/glassmorphism-base.css" />
-    <link rel="stylesheet" href="css/typography.css" />
+    <!-- Enhanced Stylesheets with New Theme -->
+    <link rel="stylesheet" href="css/enhanced-theme.css" />
     <link rel="stylesheet" href="css/components.css" />
     <link rel="stylesheet" href="css/utilities.css" />
-    <link rel="stylesheet" href="css/styles.css" />
     
     <!-- External Resources -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -26,10 +24,16 @@
 <body>
     <!-- Main Application Container -->
     <div class="container">
-        <!-- Enhanced Header with Glassmorphism -->
+        <!-- Enhanced Header with API Status -->
         <header class="header">
-            <h1 class="gradient-text">🔮 Trend Compass</h1>
-            <p class="subtitle">Next-Gen AI-Powered Trend Forecasting & Cultural Insights</p>
+            <h1 class="gradient-text">Trend Compass</h1>
+            <p class="subtitle" style="color: var(--neutral-600); font-weight: 500;">Next-Gen AI-Powered Trend Forecasting & Cultural Insights</p>
+            
+            <!-- API Status Indicator -->
+            <div id="apiStatus" class="api-status">
+                <span class="status-indicator status-warning"></span>
+                <span>Checking API status...</span>
+            </div>
             
             <!-- Enhanced Navigation -->
             <nav class="nav-tabs">
@@ -41,9 +45,13 @@
                     <i class="fas fa-users"></i>
                     <span>Audience Insights</span>
                 </button>
+                <button class="helper-btn neomorphic-hover transition-all" onclick="showHelperMenu(this)">
+                    <i class="fas fa-magic"></i>
+                    <span>Helper Tools</span>
+                </button>
             </nav>
         </header>
-
+                
         <!-- Main Content Area -->
         <main class="main-content">
             <!-- Trend Analysis Tab -->
@@ -74,7 +82,13 @@
                                         placeholder="e.g., Plant-based meat alternatives, Sustainable fashion, Remote work culture..."
                                         required
                                         autocomplete="off"
+                                        maxlength="200"
+                                        minlength="3"
                                     />
+                                    <div class="character-count">
+                                        <span id="trendCharCount">0</span>/200 characters
+                                    </div>
+                                    <div class="validation-message" id="trendValidation"></div>
                                 </div>
                                 <button type="submit" class="btn btn-accent submit-button neomorphic-hover transition-all">
                                     <i class="fas fa-magic"></i>
@@ -82,6 +96,39 @@
                                 </button>
                             </div>
                         </div>
+                        
+                        <!-- Optional Advanced Inputs -->
+                        <div class="advanced-inputs" style="display: none;">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-industry"></i>
+                                    <span>Industry (Optional)</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="trendIndustry" 
+                                    class="input-field"
+                                    placeholder="e.g., Fashion, Technology, Food & Beverage"
+                                />
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Timeframe (Optional)</span>
+                                </label>
+                                <select id="trendTimeframe" class="input-field">
+                                    <option value="">Select timeframe</option>
+                                    <option value="3 months">3 months</option>
+                                    <option value="6 months">6 months</option>
+                                    <option value="1 year">1 year</option>
+                                    <option value="2 years">2 years</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn-link" onclick="toggleAdvancedInputs('trend')">
+                            <i class="fas fa-cog"></i> Advanced Options
+                        </button>
                     </form>
                     
                     <!-- Loading State -->
@@ -89,12 +136,23 @@
                         <div class="loading-spinner"></div>
                     </div>
                     
-                    <!-- Results Container -->
+                    <!-- Results Container with Export -->
                     <div id="trendResults" class="results-section d-none">
                         <div class="results-container">
                             <div class="results-header">
                                 <i class="fas fa-brain text-accent"></i>
                                 <h3>AI Analysis Results</h3>
+                                <div class="results-actions">
+                                    <button class="btn btn-export" onclick="exportResults('trend', 'json')">
+                                        <i class="fas fa-download"></i> Export JSON
+                                    </button>
+                                    <button class="btn btn-export" onclick="exportResults('trend', 'csv')">
+                                        <i class="fas fa-file-csv"></i> Export CSV
+                                    </button>
+                                    <button class="btn btn-export" onclick="saveInsight('trend')">
+                                        <i class="fas fa-bookmark"></i> Save Insight
+                                    </button>
+                                </div>
                             </div>
                             <div class="results-content" id="trendResultsContent">
                                 <!-- Results will be populated here -->
@@ -130,7 +188,13 @@
                                         class="input-field textarea-field transition-all"
                                         placeholder="e.g., Tech-savvy millennials interested in sustainable living, Gen Z fashion enthusiasts, health-conscious professionals..."
                                         required
+                                        maxlength="500"
+                                        minlength="10"
                                     ></textarea>
+                                    <div class="character-count">
+                                        <span id="audienceCharCount">0</span>/500 characters
+                                    </div>
+                                    <div class="validation-message" id="audienceValidation"></div>
                                 </div>
                                 <button type="submit" class="btn btn-success submit-button neomorphic-hover transition-all">
                                     <i class="fas fa-search-plus"></i>
@@ -138,6 +202,42 @@
                                 </button>
                             </div>
                         </div>
+                        
+                        <!-- Optional Advanced Inputs -->
+                        <div class="advanced-inputs" style="display: none;">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-tag"></i>
+                                    <span>Product Category (Optional)</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="audienceCategory" 
+                                    class="input-field"
+                                    placeholder="e.g., Beauty, Tech gadgets, Fitness products"
+                                />
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-globe"></i>
+                                    <span>Region (Optional)</span>
+                                </label>
+                                <select id="audienceRegion" class="input-field">
+                                    <option value="">Select region</option>
+                                    <option value="North America">North America</option>
+                                    <option value="Europe">Europe</option>
+                                    <option value="Asia">Asia</option>
+                                    <option value="South America">South America</option>
+                                    <option value="Africa">Africa</option>
+                                    <option value="Oceania">Oceania</option>
+                                    <option value="Global">Global</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn-link" onclick="toggleAdvancedInputs('audience')">
+                            <i class="fas fa-cog"></i> Advanced Options
+                        </button>
                     </form>
                     
                     <!-- Loading State -->
@@ -145,12 +245,23 @@
                         <div class="loading-spinner"></div>
                     </div>
                     
-                    <!-- Results Container -->
+                    <!-- Results Container with Export -->
                     <div id="audienceResults" class="results-section d-none">
                         <div class="results-container">
                             <div class="results-header">
                                 <i class="fas fa-chart-pie text-accent"></i>
                                 <h3>Audience Analysis Results</h3>
+                                <div class="results-actions">
+                                    <button class="btn btn-export" onclick="exportResults('audience', 'json')">
+                                        <i class="fas fa-download"></i> Export JSON
+                                    </button>
+                                    <button class="btn btn-export" onclick="exportResults('audience', 'csv')">
+                                        <i class="fas fa-file-csv"></i> Export CSV
+                                    </button>
+                                    <button class="btn btn-export" onclick="saveInsight('audience')">
+                                        <i class="fas fa-bookmark"></i> Save Insight
+                                    </button>
+                                </div>
                             </div>
                             <div class="results-content" id="audienceResultsContent">
                                 <!-- Results will be populated here -->
@@ -160,12 +271,6 @@
                 </section>
             </div>
         </main>
-        
-        <!-- Optional: Floating Action Button for Quick Actions -->
-        <button class="fab tooltip neomorphic-hover transition-all" title="Quick Actions" aria-label="Quick Actions">
-            <i class="fas fa-plus"></i>
-            <span class="tooltip-text">Quick Actions</span>
-        </button>
     </div>
 
     <!-- Error/Success Message Container -->

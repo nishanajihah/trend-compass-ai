@@ -1,1359 +1,302 @@
 /**
- * Trend Compass - Enhanced Glassmorphism UI Application
- * Modern, accessible, and highly interactive frontend
+ * Trend Compass - Clean Application JavaScript
+ * Fixed version without duplicates and with working API endpoints
  */
 
-// Configuration
-const API_BASE_URL = 'http://localhost:8000/api';
+// API Configuration
+const API_BASE_URL = 'http://localhost:8000';
 
-// UI State Management
-const UIState = {
-    activeTab: 'trend-tab',
-    isLoading: false,
-    notifications: []
+// DOM Elements - Clean mapping
+const elements = {
+    // Trend Analysis
+    trendForm: document.getElementById('trendForm'),
+    trendQuery: document.getElementById('trendQuery'),
+    trendIndustry: document.getElementById('trendIndustry'),
+    trendTimeframe: document.getElementById('trendTimeframe'),
+    trendCharCount: document.getElementById('trendCharCount'),
+    trendValidation: document.getElementById('trendValidation'),
+    trendLoading: document.getElementById('trendLoading'),
+    trendResults: document.getElementById('trendResults'),
+    
+    // Audience Analysis
+    audienceForm: document.getElementById('audienceForm'),
+    audienceDescription: document.getElementById('audienceDescription'),
+    audienceCategory: document.getElementById('audienceCategory'),
+    audienceRegion: document.getElementById('audienceRegion'),
+    audienceCharCount: document.getElementById('audienceCharCount'),
+    audienceValidation: document.getElementById('audienceValidation'),
+    audienceLoading: document.getElementById('audienceLoading'),
+    audienceResults: document.getElementById('audienceResults')
 };
 
-// DOM Elements Cache
-const elements = {};
-
 /**
- * Initialize the application when DOM is fully loaded
+ * Initialize the application
  */
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Trend Compass Enhanced UI initializing...');
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing Trend Compass App...');
     
-    // Initialize application
-    initializeElements();
+    // Initialize all features
+    initTabSwitching();
     initializeEventListeners();
-    initializeEnhancements();
+    initializeCharacterCounters();
+    initializeValidation();
     
-    console.log('✨ Application ready with glassmorphism UI!');
+    // Auto-check API status on load
+    setTimeout(() => {
+        checkApiStatus();
+    }, 500);
+    
+    console.log('✅ Trend Compass App initialized successfully!');
 });
 
 /**
- * Initialize all DOM elements with enhanced error checking
- */
-function initializeElements() {
-    const elementMap = {
-        // Navigation elements
-        tabButtons: '.tab-button',
-        tabContents: '.tab-content',
-        
-        // Forms
-        trendForm: '#trendForm',
-        audienceForm: '#audienceForm',
-        
-        // Input fields
-        trendQuery: '#trendQuery',
-        audienceDescription: '#audienceDescription',
-        
-        // Results containers
-        trendResults: '#trendResults',
-        audienceResults: '#audienceResults',
-        trendResultsContent: '#trendResultsContent',
-        audienceResultsContent: '#audienceResultsContent',
-        
-        // Loading states
-        trendLoading: '#trendLoading',
-        audienceLoading: '#audienceLoading',
-        
-        // UI enhancements
-        fab: '.fab',
-        messageContainer: '#messageContainer'
-    };
-    
-    // Cache elements
-    Object.entries(elementMap).forEach(([key, selector]) => {
-        if (selector.startsWith('.tab-button') || selector.startsWith('.tab-content')) {
-            elements[key] = document.querySelectorAll(selector);
-        } else {
-            elements[key] = document.querySelector(selector);
-        }
-        
-        if (!elements[key] || (NodeList.prototype.isPrototypeOf(elements[key]) && elements[key].length === 0)) {
-            console.warn(`⚠️ Element not found: ${selector}`);
-        }
-    });
-    
-    console.log('✅ DOM elements cached successfully');
-}
-
-/**
  * Initialize all event listeners
  */
 function initializeEventListeners() {
-    // Tab navigation
-    initTabSystem();
-    
-    // Form handling
-    initFormHandlers();
-    
-    // Enhanced UI interactions
-    initUIEnhancements();
-    
-    // Keyboard shortcuts
-    initKeyboardShortcuts();
-    
-    console.log('✅ Event listeners initialized');
-}
-
-/**
- * Initialize tab switching system with animations
- */
-function initTabSystem() {
-    if (!elements.tabButtons || elements.tabButtons.length === 0) {
-        console.error('❌ Tab buttons not found!');
-        return;
-    }
-    
-    elements.tabButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetTab = button.getAttribute('data-tab');
-            switchTab(targetTab);
-        });
-    });
-    
-    console.log('✅ Tab system initialized');
-}
-
-/**
- * Switch between tabs with smooth animations
- */
-function switchTab(targetTabId) {
-    // Update UI state
-    UIState.activeTab = targetTabId;
-    
-    // Update tab buttons
-    elements.tabButtons.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.getAttribute('data-tab') === targetTabId) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Update tab contents with fade animation
-    elements.tabContents.forEach(content => {
-        if (content.id === targetTabId) {
-            content.classList.remove('d-none');
-            setTimeout(() => content.classList.add('active'), 10);
-        } else {
-            content.classList.remove('active');
-            setTimeout(() => content.classList.add('d-none'), 300);
-        }
-    });
-    
-    // Analytics/tracking (for future implementation)
-    console.log(`📊 Tab switched to: ${targetTabId}`);
-}
-
-/**
- * Initialize form handlers with enhanced validation
- */
-function initFormHandlers() {
-    // Trend analysis form
+    // Trend form submission
     if (elements.trendForm) {
         elements.trendForm.addEventListener('submit', handleTrendSubmission);
+        console.log('✅ Trend form listener added');
     }
     
-    // Audience insights form
+    // Audience form submission
     if (elements.audienceForm) {
         elements.audienceForm.addEventListener('submit', handleAudienceSubmission);
+        console.log('✅ Audience form listener added');
+    }
+}
+
+/**
+ * Initialize character counters
+ */
+function initializeCharacterCounters() {
+    // Trend query counter
+    if (elements.trendQuery && elements.trendCharCount) {
+        elements.trendQuery.addEventListener('input', function() {
+            const count = this.value.length;
+            elements.trendCharCount.textContent = count;
+            
+            // Color coding for character count
+            if (count > 180) {
+                elements.trendCharCount.style.color = '#ef4444'; // Red
+            } else if (count > 160) {
+                elements.trendCharCount.style.color = '#f59e0b'; // Orange
+            } else {
+                elements.trendCharCount.style.color = '#6b7280'; // Gray
+            }
+        });
     }
     
-    // Input enhancements
-    initInputEnhancements();
-    
-    console.log('✅ Form handlers initialized');
+    // Audience description counter
+    if (elements.audienceDescription && elements.audienceCharCount) {
+        elements.audienceDescription.addEventListener('input', function() {
+            const count = this.value.length;
+            elements.audienceCharCount.textContent = count;
+            
+            // Color coding for character count
+            if (count > 450) {
+                elements.audienceCharCount.style.color = '#ef4444'; // Red
+            } else if (count > 400) {
+                elements.audienceCharCount.style.color = '#f59e0b'; // Orange
+            } else {
+                elements.audienceCharCount.style.color = '#6b7280'; // Gray
+            }
+        });
+    }
 }
 
 /**
- * Enhanced input field interactions
+ * Initialize form validation
  */
-function initInputEnhancements() {
-    const inputs = document.querySelectorAll('.input-field');
-    
-    inputs.forEach(input => {
-        // Focus effects
-        input.addEventListener('focus', (e) => {
-            e.target.parentElement.classList.add('input-focused');
+function initializeValidation() {
+    // Trend query validation
+    if (elements.trendQuery && elements.trendValidation) {
+        elements.trendQuery.addEventListener('blur', function() {
+            validateTrendInput();
         });
         
-        input.addEventListener('blur', (e) => {
-            e.target.parentElement.classList.remove('input-focused');
+        elements.trendQuery.addEventListener('input', function() {
+            // Clear validation message on input
+            elements.trendValidation.textContent = '';
+            elements.trendValidation.className = 'validation-message';
         });
-        
-        // Real-time validation feedback
-        input.addEventListener('input', (e) => {
-            validateInput(e.target);
-        });
-    });
-}
-
-/**
- * Real-time input validation
- */
-function validateInput(input) {
-    const isValid = input.value.trim().length > 0;
-    
-    if (isValid) {
-        input.classList.remove('input-invalid');
-        input.classList.add('input-valid');
-    } else {
-        input.classList.remove('input-valid');
-        input.classList.add('input-invalid');
     }
     
-    return isValid;
+    // Audience description validation
+    if (elements.audienceDescription && elements.audienceValidation) {
+        elements.audienceDescription.addEventListener('blur', function() {
+            validateAudienceInput();
+        });
+        
+        elements.audienceDescription.addEventListener('input', function() {
+            // Clear validation message on input
+            elements.audienceValidation.textContent = '';
+            elements.audienceValidation.className = 'validation-message';
+        });
+    }
 }
 
 /**
- * Handle trend analysis form submission
+ * Validate trend input
+ */
+function validateTrendInput() {
+    const value = elements.trendQuery.value.trim();
+    
+    if (value.length < 3) {
+        showValidationMessage(elements.trendValidation, 'Please enter at least 3 characters', 'error');
+        return false;
+    }
+    
+    if (value.length > 200) {
+        showValidationMessage(elements.trendValidation, 'Please keep your query under 200 characters', 'error');
+        return false;
+    }
+    
+    showValidationMessage(elements.trendValidation, 'Looking good! 👍', 'success');
+    return true;
+}
+
+/**
+ * Validate audience input
+ */
+function validateAudienceInput() {
+    const value = elements.audienceDescription.value.trim();
+    
+    if (value.length < 10) {
+        showValidationMessage(elements.audienceValidation, 'Please enter at least 10 characters', 'error');
+        return false;
+    }
+    
+    if (value.length > 500) {
+        showValidationMessage(elements.audienceValidation, 'Please keep your description under 500 characters', 'error');
+        return false;
+    }
+    
+    showValidationMessage(elements.audienceValidation, 'Looking good! 👍', 'success');
+    return true;
+}
+
+/**
+ * Show validation message
+ */
+function showValidationMessage(element, message, type) {
+    element.textContent = message;
+    element.className = `validation-message ${type}`;
+}
+
+/**
+ * Handle trend form submission
  */
 async function handleTrendSubmission(e) {
     e.preventDefault();
+    console.log('🔍 Processing trend analysis request...');
     
-    const query = elements.trendQuery?.value.trim();
-    if (!query) {
-        showNotification('Please enter a trend to analyze', 'warning');
+    // Hide advanced options after submission
+    const advancedInputs = document.querySelector('#trendForm .advanced-inputs');
+    if (advancedInputs && advancedInputs.style.display === 'block') {
+        toggleAdvancedInputs('trend');
+    }
+    
+    // Validate input
+    if (!validateTrendInput()) {
+        console.log('❌ Trend validation failed');
         return;
     }
     
+    const formData = {
+        trend_query: elements.trendQuery.value.trim(),
+        industry: elements.trendIndustry?.value || '',
+        timeframe: elements.trendTimeframe?.value || ''
+    };
+    
+    console.log('📊 Trend data:', formData);
+    
+    // Show loading state
+    showLoading(elements.trendLoading);
+    hideResults(elements.trendResults);
+    
     try {
-        setLoadingState('trend', true);
-        hideResults('trend');
-        
-        const response = await fetch(`${API_BASE_URL}/trends/analyze`, {
+        const response = await fetch(`${API_BASE_URL}/api/trends/analyze`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ query })
+            body: JSON.stringify(formData)
         });
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        displayTrendResults(data);
-        showNotification('Trend analysis completed!', 'success');
-        
-    } catch (error) {
-        console.error('❌ Trend analysis error:', error);
-        showNotification('Failed to analyze trend. Please try again.', 'error');
-    } finally {
-        setLoadingState('trend', false);
-    }
-}
-
-/**
- * Handle audience insights form submission
- */
-async function handleAudienceSubmission(e) {
-    e.preventDefault();
-    
-    const description = elements.audienceDescription?.value.trim();
-    if (!description) {
-        showNotification('Please describe your target audience', 'warning');
-        return;
-    }
-    
-    try {
-        setLoadingState('audience', true);
-        hideResults('audience');
-        
-        const response = await fetch(`${API_BASE_URL}/audience/analyze`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ target_audience: description })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        displayAudienceResults(data);
-        showNotification('Audience analysis completed!', 'success');
-        
-    } catch (error) {
-        console.error('❌ Audience analysis error:', error);
-        showNotification('Failed to analyze audience. Please try again.', 'error');
-    } finally {
-        setLoadingState('audience', false);
-    }
-}
-
-/**
- * Set loading state with visual feedback
- */
-function setLoadingState(type, isLoading) {
-    UIState.isLoading = isLoading;
-    
-    const loadingElement = elements[`${type}Loading`];
-    const submitButton = document.querySelector(`#${type}Form .submit-button`);
-    
-    if (loadingElement) {
-        if (isLoading) {
-            loadingElement.classList.remove('d-none');
-        } else {
-            loadingElement.classList.add('d-none');
-        }
-    }
-    
-    if (submitButton) {
-        submitButton.disabled = isLoading;
-        
-        if (isLoading) {
-            submitButton.classList.add('loading');
-            const originalText = submitButton.innerHTML;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Analyzing...</span>';
-            submitButton.dataset.originalText = originalText;
-        } else {
-            submitButton.classList.remove('loading');
-            if (submitButton.dataset.originalText) {
-                submitButton.innerHTML = submitButton.dataset.originalText;
-            }
-        }
-    }
-}
-
-/**
- * Display trend analysis results with enhanced formatting
- */
-function displayTrendResults(data) {
-    if (!elements.trendResultsContent) return;
-    
-    const formattedContent = formatAnalysisContent(data.analysis || data.result || 'No analysis available');
-    elements.trendResultsContent.innerHTML = formattedContent;
-    
-    showResults('trend');
-    scrollToResults('trend');
-}
-
-/**
- * Display audience insights results with enhanced formatting
- */
-function displayAudienceResults(data) {
-    if (!elements.audienceResultsContent) return;
-    
-    const formattedContent = formatAnalysisContent(data.insights || data.result || 'No insights available');
-    elements.audienceResultsContent.innerHTML = formattedContent;
-    
-    showResults('audience');
-    scrollToResults('audience');
-}
-
-/**
- * Format analysis content with improved typography and structure
- */
-function formatAnalysisContent(content) {
-    // Convert markdown-like formatting to HTML
-    let formatted = content
-        .replace(/## (.*$)/gim, '<h4 class="text-accent mt-lg mb-md">$1</h4>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/\n\n/g, '</p><p class="mb-md">')
-        .replace(/\n/g, '<br>');
-    
-    // Wrap in paragraph tags
-    formatted = `<p class="mb-md">${formatted}</p>`;
-    
-    // Clean up any empty paragraphs
-    formatted = formatted.replace(/<p class="mb-md"><\/p>/g, '');
-    
-    return formatted;
-}
-
-/**
- * Show results with smooth animation
- */
-function showResults(type) {
-    const resultsElement = elements[`${type}Results`];
-    if (resultsElement) {
-        resultsElement.classList.remove('d-none');
-        setTimeout(() => {
-            resultsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-    }
-}
-
-/**
- * Hide results
- */
-function hideResults(type) {
-    const resultsElement = elements[`${type}Results`];
-    if (resultsElement) {
-        resultsElement.classList.add('d-none');
-    }
-}
-
-/**
- * Smooth scroll to results
- */
-function scrollToResults(type) {
-    const resultsElement = elements[`${type}Results`];
-    if (resultsElement) {
-        setTimeout(() => {
-            resultsElement.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start',
-                inline: 'nearest'
-            });
-        }, 300);
-    }
-}
-
-/**
- * Enhanced notification system
- */
-function showNotification(message, type = 'info', duration = 5000) {
-    const notification = createNotificationElement(message, type);
-    
-    if (elements.messageContainer) {
-        elements.messageContainer.appendChild(notification);
-        elements.messageContainer.classList.remove('d-none');
-        
-        // Animate in
-        setTimeout(() => notification.classList.add('notification-show'), 10);
-        
-        // Auto remove
-        setTimeout(() => {
-            removeNotification(notification);
-        }, duration);
-    }
-}
-
-/**
- * Create notification element
- */
-function createNotificationElement(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type} glass-primary neomorphic-effect mb-sm`;
-    
-    const icons = {
-        success: 'fas fa-check-circle',
-        error: 'fas fa-exclamation-circle',
-        warning: 'fas fa-exclamation-triangle',
-        info: 'fas fa-info-circle'
-    };
-    
-    notification.innerHTML = `
-        <div class="d-flex items-center">
-            <i class="${icons[type] || icons.info} mr-md"></i>
-            <span class="flex-1">${message}</span>
-            <button class="notification-close btn-sm" onclick="this.parentElement.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
-    
-    return notification;
-}
-
-/**
- * Remove notification with animation
- */
-function removeNotification(notification) {
-    notification.classList.add('notification-hide');
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-            
-            // Hide container if no notifications left
-            if (elements.messageContainer && elements.messageContainer.children.length === 0) {
-                elements.messageContainer.classList.add('d-none');
-            }
-        }
-    }, 300);
-}
-
-/**
- * Initialize UI enhancements
- */
-function initUIEnhancements() {
-    // Floating Action Button
-    if (elements.fab) {
-        elements.fab.addEventListener('click', () => {
-            showNotification('Feature coming soon!', 'info');
-        });
-    }
-    
-    // Intersection Observer for animations
-    initScrollAnimations();
-    
-    // Parallax effects
-    initParallaxEffects();
-    
-    console.log('✅ UI enhancements initialized');
-}
-
-/**
- * Initialize scroll-based animations
- */
-function initScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
-            }
-        });
-    }, observerOptions);
-    
-    // Observe cards for animation
-    document.querySelectorAll('.card, .results-container').forEach(el => {
-        observer.observe(el);
-    });
-}
-
-/**
- * Initialize subtle parallax effects
- */
-function initParallaxEffects() {
-    let ticking = false;
-    
-    function updateParallax() {
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
-        
-        // Apply subtle parallax to background elements
-        document.body.style.backgroundPosition = `50% ${rate}px`;
-        
-        ticking = false;
-    }
-    
-    function requestTick() {
-        if (!ticking) {
-            requestAnimationFrame(updateParallax);
-            ticking = true;
-        }
-    }
-    
-    window.addEventListener('scroll', requestTick);
-}
-
-/**
- * Initialize keyboard shortcuts
- */
-function initKeyboardShortcuts() {
-    document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + 1 = Trend Analysis tab
-        if ((e.ctrlKey || e.metaKey) && e.key === '1') {
-            e.preventDefault();
-            switchTab('trend-tab');
-        }
-        
-        // Ctrl/Cmd + 2 = Audience Insights tab
-        if ((e.ctrlKey || e.metaKey) && e.key === '2') {
-            e.preventDefault();
-            switchTab('audience-tab');
-        }
-        
-        // Escape = Focus current tab's input
-        if (e.key === 'Escape') {
-            if (UIState.activeTab === 'trend-tab' && elements.trendQuery) {
-                elements.trendQuery.focus();
-            } else if (UIState.activeTab === 'audience-tab' && elements.audienceDescription) {
-                elements.audienceDescription.focus();
-            }
-        }
-    });
-    
-    console.log('✅ Keyboard shortcuts initialized');
-}
-
-/**
- * Initialize additional enhancements
- */
-function initializeEnhancements() {
-    // Add CSS classes for enhanced animations
-    const style = document.createElement('style');
-    style.textContent = `
-        .notification {
-            transform: translateX(100%);
-            transition: all 0.3s var(--ease-out-cubic);
-            opacity: 0;
-            padding: 1rem;
-            border-radius: var(--radius-md);
-            margin-bottom: 0.5rem;
-            max-width: 350px;
-        }
-        
-        .notification-show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        
-        .notification-hide {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        
-        .notification-success {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            color: #16a34a;
-        }
-        
-        .notification-error {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #dc2626;
-        }
-        
-        .notification-warning {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            color: #d97706;
-        }
-        
-        .notification-info {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            color: #2563eb;
-        }
-        
-        .notification-close {
-            background: none;
-            border: none;
-            color: inherit;
-            cursor: pointer;
-            padding: 0.25rem;
-            border-radius: var(--radius-sm);
-            opacity: 0.7;
-            transition: opacity 0.3s ease;
-        }
-        
-        .notification-close:hover {
-            opacity: 1;
-        }
-        
-        .input-focused {
-            transform: scale(1.02);
-        }
-        
-        .input-valid {
-            border-color: #16a34a !important;
-        }
-        
-        .input-invalid {
-            border-color: #dc2626 !important;
-        }
-        
-        .animate-in {
-            animation: slideInUp 0.6s var(--ease-out-cubic);
-        }
-        
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    console.log('✅ Additional enhancements applied');
-}
-
-/**
- * Initialize all event listeners
- */
-function initializeEventListeners() {
-    // Tab navigation
-    initTabSystem();
-    
-    // Form handling
-    initFormHandlers();
-    
-    // Enhanced UI interactions
-    initUIEnhancements();
-    
-    // Keyboard shortcuts
-    initKeyboardShortcuts();
-    
-    console.log('✅ Event listeners initialized');
-}
-
-/**
- * Initialize tab switching system with animations
- */
-function initTabSystem() {
-    if (!elements.tabButtons || elements.tabButtons.length === 0) {
-        console.error('❌ Tab buttons not found!');
-        return;
-    }
-    
-    elements.tabButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetTab = button.getAttribute('data-tab');
-            switchTab(targetTab);
-        });
-    });
-    
-    console.log('✅ Tab system initialized');
-}
-
-/**
- * Switch between tabs with smooth animations
- */
-function switchTab(targetTabId) {
-    // Update UI state
-    UIState.activeTab = targetTabId;
-    
-    // Update tab buttons
-    elements.tabButtons.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.getAttribute('data-tab') === targetTabId) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Update tab contents with fade animation
-    elements.tabContents.forEach(content => {
-        if (content.id === targetTabId) {
-            content.classList.remove('d-none');
-            setTimeout(() => content.classList.add('active'), 10);
-        } else {
-            content.classList.remove('active');
-            setTimeout(() => content.classList.add('d-none'), 300);
-        }
-    });
-    
-    // Analytics/tracking (for future implementation)
-    console.log(`📊 Tab switched to: ${targetTabId}`);
-}
-
-/**
- * Initialize form handlers with enhanced validation
- */
-function initFormHandlers() {
-    // Trend analysis form
-    if (elements.trendForm) {
-        elements.trendForm.addEventListener('submit', handleTrendSubmission);
-    }
-    
-    // Audience insights form
-    if (elements.audienceForm) {
-        elements.audienceForm.addEventListener('submit', handleAudienceSubmission);
-    }
-    
-    // Input enhancements
-    initInputEnhancements();
-    
-    console.log('✅ Form handlers initialized');
-}
-
-/**
- * Enhanced input field interactions
- */
-function initInputEnhancements() {
-    const inputs = document.querySelectorAll('.input-field');
-    
-    inputs.forEach(input => {
-        // Focus effects
-        input.addEventListener('focus', (e) => {
-            e.target.parentElement.classList.add('input-focused');
-        });
-        
-        input.addEventListener('blur', (e) => {
-            e.target.parentElement.classList.remove('input-focused');
-        });
-        
-        // Real-time validation feedback
-        input.addEventListener('input', (e) => {
-            validateInput(e.target);
-        });
-    });
-}
-
-/**
- * Real-time input validation
- */
-function validateInput(input) {
-    const isValid = input.value.trim().length > 0;
-    
-    if (isValid) {
-        input.classList.remove('input-invalid');
-        input.classList.add('input-valid');
-    } else {
-        input.classList.remove('input-valid');
-        input.classList.add('input-invalid');
-    }
-    
-    return isValid;
-}
-
-/**
- * Handle trend analysis form submission
- */
-async function handleTrendSubmission(e) {
-    e.preventDefault();
-    
-    const query = elements.trendQuery?.value.trim();
-    if (!query) {
-        showNotification('Please enter a trend to analyze', 'warning');
-        return;
-    }
-    
-    try {
-        setLoadingState('trend', true);
-        hideResults('trend');
-        
-        const response = await fetch(`${API_BASE_URL}/trends/analyze`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ query })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        displayTrendResults(data);
-        showNotification('Trend analysis completed!', 'success');
-        
-    } catch (error) {
-        console.error('❌ Trend analysis error:', error);
-        showNotification('Failed to analyze trend. Please try again.', 'error');
-    } finally {
-        setLoadingState('trend', false);
-    }
-}
-
-/**
- * Handle audience insights form submission
- */
-async function handleAudienceSubmission(e) {
-    e.preventDefault();
-    
-    const description = elements.audienceDescription?.value.trim();
-    if (!description) {
-        showNotification('Please describe your target audience', 'warning');
-        return;
-    }
-    
-    try {
-        setLoadingState('audience', true);
-        hideResults('audience');
-        
-        const response = await fetch(`${API_BASE_URL}/audience/analyze`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ target_audience: description })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        displayAudienceResults(data);
-        showNotification('Audience analysis completed!', 'success');
-        
-    } catch (error) {
-        console.error('❌ Audience analysis error:', error);
-        showNotification('Failed to analyze audience. Please try again.', 'error');
-    } finally {
-        setLoadingState('audience', false);
-    }
-}
-
-/**
- * Set loading state with visual feedback
- */
-function setLoadingState(type, isLoading) {
-    UIState.isLoading = isLoading;
-    
-    const loadingElement = elements[`${type}Loading`];
-    const submitButton = document.querySelector(`#${type}Form .submit-button`);
-    
-    if (loadingElement) {
-        if (isLoading) {
-            loadingElement.classList.remove('d-none');
-        } else {
-            loadingElement.classList.add('d-none');
-        }
-    }
-    
-    if (submitButton) {
-        submitButton.disabled = isLoading;
-        
-        if (isLoading) {
-            submitButton.classList.add('loading');
-            const originalText = submitButton.innerHTML;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Analyzing...</span>';
-            submitButton.dataset.originalText = originalText;
-        } else {
-            submitButton.classList.remove('loading');
-            if (submitButton.dataset.originalText) {
-                submitButton.innerHTML = submitButton.dataset.originalText;
-            }
-        }
-    }
-}
-
-/**
- * Display trend analysis results with enhanced formatting
- */
-function displayTrendResults(data) {
-    if (!elements.trendResultsContent) return;
-    
-    const formattedContent = formatAnalysisContent(data.analysis || data.result || 'No analysis available');
-    elements.trendResultsContent.innerHTML = formattedContent;
-    
-    showResults('trend');
-    scrollToResults('trend');
-}
-
-/**
- * Display audience insights results with enhanced formatting
- */
-function displayAudienceResults(data) {
-    if (!elements.audienceResultsContent) return;
-    
-    const formattedContent = formatAnalysisContent(data.insights || data.result || 'No insights available');
-    elements.audienceResultsContent.innerHTML = formattedContent;
-    
-    showResults('audience');
-    scrollToResults('audience');
-}
-
-/**
- * Format analysis content with improved typography and structure
- */
-function formatAnalysisContent(content) {
-    // Convert markdown-like formatting to HTML
-    let formatted = content
-        .replace(/## (.*$)/gim, '<h4 class="text-accent mt-lg mb-md">$1</h4>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/\n\n/g, '</p><p class="mb-md">')
-        .replace(/\n/g, '<br>');
-    
-    // Wrap in paragraph tags
-    formatted = `<p class="mb-md">${formatted}</p>`;
-    
-    // Clean up any empty paragraphs
-    formatted = formatted.replace(/<p class="mb-md"><\/p>/g, '');
-    
-    return formatted;
-}
-
-/**
- * Show results with smooth animation
- */
-function showResults(type) {
-    const resultsElement = elements[`${type}Results`];
-    if (resultsElement) {
-        resultsElement.classList.remove('d-none');
-        setTimeout(() => {
-            resultsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-    }
-}
-
-/**
- * Hide results
- */
-function hideResults(type) {
-    const resultsElement = elements[`${type}Results`];
-    if (resultsElement) {
-        resultsElement.classList.add('d-none');
-    }
-}
-
-/**
- * Smooth scroll to results
- */
-function scrollToResults(type) {
-    const resultsElement = elements[`${type}Results`];
-    if (resultsElement) {
-        setTimeout(() => {
-            resultsElement.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start',
-                inline: 'nearest'
-            });
-        }, 300);
-    }
-}
-
-/**
- * Enhanced notification system
- */
-function showNotification(message, type = 'info', duration = 5000) {
-    const notification = createNotificationElement(message, type);
-    
-    if (elements.messageContainer) {
-        elements.messageContainer.appendChild(notification);
-        elements.messageContainer.classList.remove('d-none');
-        
-        // Animate in
-        setTimeout(() => notification.classList.add('notification-show'), 10);
-        
-        // Auto remove
-        setTimeout(() => {
-            removeNotification(notification);
-        }, duration);
-    }
-}
-
-/**
- * Create notification element
- */
-function createNotificationElement(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type} glass-primary neomorphic-effect mb-sm`;
-    
-    const icons = {
-        success: 'fas fa-check-circle',
-        error: 'fas fa-exclamation-circle',
-        warning: 'fas fa-exclamation-triangle',
-        info: 'fas fa-info-circle'
-    };
-    
-    notification.innerHTML = `
-        <div class="d-flex items-center">
-            <i class="${icons[type] || icons.info} mr-md"></i>
-            <span class="flex-1">${message}</span>
-            <button class="notification-close btn-sm" onclick="this.parentElement.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
-    
-    return notification;
-}
-
-/**
- * Remove notification with animation
- */
-function removeNotification(notification) {
-    notification.classList.add('notification-hide');
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-            
-            // Hide container if no notifications left
-            if (elements.messageContainer && elements.messageContainer.children.length === 0) {
-                elements.messageContainer.classList.add('d-none');
-            }
-        }
-    }, 300);
-}
-
-/**
- * Initialize UI enhancements
- */
-function initUIEnhancements() {
-    // Floating Action Button
-    if (elements.fab) {
-        elements.fab.addEventListener('click', () => {
-            showNotification('Feature coming soon!', 'info');
-        });
-    }
-    
-    // Intersection Observer for animations
-    initScrollAnimations();
-    
-    // Parallax effects
-    initParallaxEffects();
-    
-    console.log('✅ UI enhancements initialized');
-}
-
-/**
- * Initialize scroll-based animations
- */
-function initScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
-            }
-        });
-    }, observerOptions);
-    
-    // Observe cards for animation
-    document.querySelectorAll('.card, .results-container').forEach(el => {
-        observer.observe(el);
-    });
-}
-
-/**
- * Initialize subtle parallax effects
- */
-function initParallaxEffects() {
-    let ticking = false;
-    
-    function updateParallax() {
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
-        
-        // Apply subtle parallax to background elements
-        document.body.style.backgroundPosition = `50% ${rate}px`;
-        
-        ticking = false;
-    }
-    
-    function requestTick() {
-        if (!ticking) {
-            requestAnimationFrame(updateParallax);
-            ticking = true;
-        }
-    }
-    
-    window.addEventListener('scroll', requestTick);
-}
-
-/**
- * Initialize keyboard shortcuts
- */
-function initKeyboardShortcuts() {
-    document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + 1 = Trend Analysis tab
-        if ((e.ctrlKey || e.metaKey) && e.key === '1') {
-            e.preventDefault();
-            switchTab('trend-tab');
-        }
-        
-        // Ctrl/Cmd + 2 = Audience Insights tab
-        if ((e.ctrlKey || e.metaKey) && e.key === '2') {
-            e.preventDefault();
-            switchTab('audience-tab');
-        }
-        
-        // Escape = Clear forms
-        if (e.key === 'Escape') {
-            if (UIState.activeTab === 'trend-tab' && elements.trendQuery) {
-                elements.trendQuery.focus();
-            } else if (UIState.activeTab === 'audience-tab' && elements.audienceDescription) {
-                elements.audienceDescription.focus();
-            }
-        }
-    });
-    
-    console.log('✅ Keyboard shortcuts initialized');
-}
-
-/**
- * Initialize additional enhancements
- */
-function initializeEnhancements() {
-    // Add CSS classes for enhanced animations
-    const style = document.createElement('style');
-    style.textContent = `
-        .notification {
-            transform: translateX(100%);
-            transition: all 0.3s var(--ease-out-cubic);
-            opacity: 0;
-        }
-        
-        .notification-show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        
-        .notification-hide {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        
-        .input-focused {
-            transform: scale(1.02);
-        }
-        
-        .input-valid {
-            border-color: var(--success-gradient) !important;
-        }
-        
-        .input-invalid {
-            border-color: var(--warning-gradient) !important;
-        }
-        
-        .animate-in {
-            animation: slideInUp 0.6s var(--ease-out-cubic);
-        }
-        
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    console.log('✅ Additional enhancements applied');
-}
-    
-    tabButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            const tabId = button.getAttribute('data-tab');
-            if (!tabId) return;
-            
-            console.log(`🔄 Switching to tab: ${tabId}`);
-            
-            // Remove active classes
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
-            
-            // Add active class to clicked button
-            button.classList.add('active');
-            
-            // Show target content
-            const targetContent = document.getElementById(tabId);
-            if (targetContent) {
-                targetContent.classList.add('active');
-            }
-        });
-    });
-    
-    console.log('✅ Tab navigation initialized');
-}
-
-/**
- * Initialize form submissions
- */
-function initForms() {
-    if (trendForm) {
-        trendForm.addEventListener('submit', handleTrendFormSubmit);
-        console.log('✅ Trend form initialized');
-    }
-    
-    if (audienceForm) {
-        audienceForm.addEventListener('submit', handleAudienceFormSubmit);
-        console.log('✅ Audience form initialized');
-    }
-}
-
-/**
- * Handle trend analysis form submission
- */
-async function handleTrendFormSubmit(e) {
-    e.preventDefault();
-    
-    console.log('📊 Processing trend analysis...');
-    
-    const formData = new FormData(trendForm);
-    const data = {
-        category: formData.get('category'),
-        timeframe: formData.get('timeframe'),
-        region: formData.get('region') || 'Global'
-    };
-    
-    // Validate required fields
-    if (!data.category) {
-        showError('Please enter a trend or category to analyze.');
-        return;
-    }
-    
-    try {
-        showLoading(true);
-        clearResults(trendResults);
-        
-        const response = await fetch(`${API_BASE_URL}/trends/analyze`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const result = await response.json();
-        console.log('✅ Trend analysis complete:', result);
+        console.log('✅ Trend analysis completed:', result);
         
+        // Display results
         displayTrendResults(result);
         
     } catch (error) {
         console.error('❌ Trend analysis failed:', error);
-        showError(`Analysis failed: ${error.message}`);
+        showErrorMessage('Failed to analyze trend. Please check if the backend server is running and try again.');
     } finally {
-        showLoading(false);
+        hideLoading(elements.trendLoading);
     }
 }
 
 /**
- * Handle audience insights form submission
+ * Handle audience form submission
  */
-async function handleAudienceFormSubmit(e) {
+async function handleAudienceSubmission(e) {
     e.preventDefault();
+    console.log('👥 Processing audience analysis request...');
     
-    console.log('👥 Processing audience insights...');
+    // Hide advanced options after submission
+    const advancedInputs = document.querySelector('#audienceForm .advanced-inputs');
+    if (advancedInputs && advancedInputs.style.display === 'block') {
+        toggleAdvancedInputs('audience');
+    }
     
-    const audienceFormData = new FormData(audienceForm);
-    const audienceData = {
-        persona: audienceFormData.get('persona'),
-        interests: audienceFormData.get('interests') || '',
-        demographics: audienceFormData.get('demographics') || ''
-    };
-    
-    // Validate required fields
-    if (!audienceData.persona) {
-        showError('Please describe your target audience persona.');
+    // Validate input
+    if (!validateAudienceInput()) {
+        console.log('❌ Audience validation failed');
         return;
     }
     
+    const formData = {
+        audience_description: elements.audienceDescription.value.trim(),
+        product_category: elements.audienceCategory?.value || '',
+        region: elements.audienceRegion?.value || ''
+    };
+    
+    console.log('👥 Audience data:', formData);
+    
+    // Show loading state
+    showLoading(elements.audienceLoading);
+    hideResults(elements.audienceResults);
+    
     try {
-        showLoading(true);
-        clearResults(audienceResults);
-        
-        const response = await fetch(`${API_BASE_URL}/audience/analyze`, {
+        const response = await fetch(`${API_BASE_URL}/api/audience/analyze`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(audienceData)
+            body: JSON.stringify(formData)
         });
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const result = await response.json();
-        console.log('✅ Audience analysis complete:', result);
+        console.log('✅ Audience analysis completed:', result);
         
+        // Display results
         displayAudienceResults(result);
         
     } catch (error) {
         console.error('❌ Audience analysis failed:', error);
-        showError(`Analysis failed: ${error.message}`);
+        showErrorMessage('Failed to analyze audience. Please check if the backend server is running and try again.');
     } finally {
-        showLoading(false);
+        hideLoading(elements.audienceLoading);
     }
 }
 
@@ -1361,265 +304,552 @@ async function handleAudienceFormSubmit(e) {
  * Display trend analysis results
  */
 function displayTrendResults(data) {
-    if (!trendResults) return;
+    if (!elements.trendResults) return;
     
-    trendResults.classList.remove('hidden');
-    trendResults.classList.add('has-results');
-    
-    const html = `
-        <div class="result-card">
-            <div class="result-header">
-                <h3><i class="fas fa-chart-line"></i> Trend Analysis Results</h3>
-                <span class="timestamp">${new Date().toLocaleString()}</span>
-            </div>
-            
-            <div class="summary">
-                ${data.summary || 'Comprehensive trend analysis completed with actionable insights.'}
-            </div>
-            
-            <div class="insights-grid">
-                ${data.insights ? data.insights.map(insight => `
-                    <div class="insight-item">
-                        <div class="insight-header">
-                            <h4 class="insight-title">${insight.title || 'Trend Insight'}</h4>
-                            <span class="confidence-badge">${insight.confidence || 'High'}</span>
-                        </div>
-                        <p class="insight-description">${insight.description || insight}</p>
-                        <span class="source-tag">AI Analysis</span>
+    const resultsHTML = `
+        <div class="results-header">
+            <div class="results-title">
+                <h3>🎯 Trend Analysis Results</h3>
+                <div class="results-meta">
+                    <span class="analysis-date">Generated: ${new Date().toLocaleDateString()}</span>
+                    <div class="export-options">
+                        <button onclick="exportResults('trend', 'json')" class="btn-export" title="Export as JSON">
+                            <i class="fas fa-download"></i> JSON
+                        </button>
+                        <button onclick="exportResults('trend', 'csv')" class="btn-export" title="Export as CSV">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
                     </div>
-                `).join('') : '<div class="insight-item"><p>No specific insights available</p></div>'}
+                </div>
             </div>
+        </div>
+        
+        <div class="results-content">
+            <div class="insight-section">
+                <h4><i class="fas fa-lightbulb"></i> Key Insights</h4>
+                <div class="insight-content">${data.analysis || 'Analysis data not available'}</div>
+            </div>
+            
+            ${data.forecast ? `
+                <div class="insight-section">
+                    <h4><i class="fas fa-chart-line"></i> Forecast</h4>
+                    <div class="insight-content">${data.forecast}</div>
+                </div>
+            ` : ''}
+            
+            ${data.cultural_context ? `
+                <div class="insight-section">
+                    <h4><i class="fas fa-globe"></i> Cultural Context</h4>
+                    <div class="insight-content">${data.cultural_context}</div>
+                </div>
+            ` : ''}
             
             ${data.recommendations ? `
-                <div class="recommendations">
-                    <h4><i class="fas fa-lightbulb"></i> Recommendations</h4>
-                    <ul>
-                        ${data.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                    </ul>
+                <div class="insight-section">
+                    <h4><i class="fas fa-star"></i> Recommendations</h4>
+                    <div class="insight-content">${data.recommendations}</div>
                 </div>
             ` : ''}
         </div>
     `;
     
-    trendResults.innerHTML = html;
-    trendResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    elements.trendResults.innerHTML = resultsHTML;
+    showResults(elements.trendResults);
+    
+    // Scroll to results
+    elements.trendResults.scrollIntoView({ behavior: 'smooth' });
 }
 
 /**
- * Display audience insights results
+ * Display audience analysis results
  */
 function displayAudienceResults(data) {
-    if (!audienceResults) return;
+    if (!elements.audienceResults) return;
     
-    audienceResults.classList.remove('hidden');
-    audienceResults.classList.add('has-results');
-    
-    const html = `
-        <div class="result-card">
-            <div class="result-header">
-                <h3><i class="fas fa-users"></i> Audience Insights Results</h3>
-                <span class="timestamp">${new Date().toLocaleString()}</span>
+    const resultsHTML = `
+        <div class="results-header">
+            <div class="results-title">
+                <h3>👥 Audience Analysis Results</h3>
+                <div class="results-meta">
+                    <span class="analysis-date">Generated: ${new Date().toLocaleDateString()}</span>
+                    <div class="export-options">
+                        <button onclick="exportResults('audience', 'json')" class="btn-export" title="Export as JSON">
+                            <i class="fas fa-download"></i> JSON
+                        </button>
+                        <button onclick="exportResults('audience', 'csv')" class="btn-export" title="Export as CSV">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results-content">
+            <div class="insight-section">
+                <h4><i class="fas fa-users"></i> Audience Insights</h4>
+                <div class="insight-content">${data.analysis || 'Analysis data not available'}</div>
             </div>
             
-            <div class="summary">
-                ${data.summary || 'Deep cultural affinity analysis completed with demographic insights.'}
-            </div>
+            ${data.demographics ? `
+                <div class="insight-section">
+                    <h4><i class="fas fa-chart-pie"></i> Demographics</h4>
+                    <div class="insight-content">${data.demographics}</div>
+                </div>
+            ` : ''}
             
-            <div class="insights-grid">
-                ${data.cultural_affinities ? data.cultural_affinities.map(affinity => `
-                    <div class="affinity-item">
-                        <div class="insight-header">
-                            <h4 class="insight-title">${affinity.category || 'Cultural Affinity'}</h4>
-                            <span class="confidence-badge">${affinity.score || 'High'}</span>
-                        </div>
-                        <p class="insight-description">${affinity.description || affinity}</p>
-                        <span class="source-tag">Qloo Data</span>
-                    </div>
-                `).join('') : '<div class="affinity-item"><p>No cultural affinities data available</p></div>'}
-                
-                ${data.insights ? data.insights.map(insight => `
-                    <div class="insight-item">
-                        <div class="insight-header">
-                            <h4 class="insight-title">${insight.title || 'Behavioral Insight'}</h4>
-                            <span class="confidence-badge">AI Generated</span>
-                        </div>
-                        <p class="insight-description">${insight.description || insight}</p>
-                        <span class="source-tag">LLM Analysis</span>
-                    </div>
-                `).join('') : ''}
-            </div>
+            ${data.cultural_affinities ? `
+                <div class="insight-section">
+                    <h4><i class="fas fa-heart"></i> Cultural Affinities</h4>
+                    <div class="insight-content">${data.cultural_affinities}</div>
+                </div>
+            ` : ''}
             
             ${data.recommendations ? `
-                <div class="recommendations">
-                    <h4><i class="fas fa-target"></i> Recommendations</h4>
-                    <ul>
-                        ${data.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                    </ul>
+                <div class="insight-section">
+                    <h4><i class="fas fa-bullseye"></i> Targeting Recommendations</h4>
+                    <div class="insight-content">${data.recommendations}</div>
                 </div>
             ` : ''}
         </div>
     `;
     
-    audienceResults.innerHTML = html;
-    audienceResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    elements.audienceResults.innerHTML = resultsHTML;
+    showResults(elements.audienceResults);
+    
+    // Scroll to results
+    elements.audienceResults.scrollIntoView({ behavior: 'smooth' });
 }
 
 /**
- * Show/hide loading state
+ * Utility functions
  */
-function showLoading(show) {
-    if (!loadingOverlay) return;
-    
-    if (show) {
-        loadingOverlay.classList.remove('hidden');
-        // Update loading text based on current tab
-        const loadingText = loadingOverlay.querySelector('.loading-text');
-        const loadingSubtitle = loadingOverlay.querySelector('.loading-subtitle');
+function showLoading(element) {
+    if (element) {
+        element.classList.remove('d-none');
+    }
+}
+
+function hideLoading(element) {
+    if (element) {
+        element.classList.add('d-none');
+    }
+}
+
+function showResults(element) {
+    if (element) {
+        element.classList.remove('d-none');
+    }
+}
+
+function hideResults(element) {
+    if (element) {
+        element.classList.add('d-none');
+    }
+}
+
+function showErrorMessage(message) {
+    // Create or update error message
+    const errorContainer = document.getElementById('messageContainer');
+    if (errorContainer) {
+        errorContainer.innerHTML = `
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>${message}</span>
+                <button class="alert-close" onclick="this.parentElement.parentElement.classList.add('d-none')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        errorContainer.classList.remove('d-none');
         
-        if (loadingText && loadingSubtitle) {
-            const activeTab = document.querySelector('.tab-button.active');
-            if (activeTab && activeTab.getAttribute('data-tab') === 'audience-tab') {
-                loadingText.textContent = 'Analyzing Audience...';
-                loadingSubtitle.textContent = 'Gathering cultural affinity data and behavioral insights';
-            } else {
-                loadingText.textContent = 'Analyzing Trends...';
-                loadingSubtitle.textContent = 'Our AI is processing your request with cultural insights';
-            }
-        }
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            errorContainer.classList.add('d-none');
+        }, 5000);
     } else {
-        loadingOverlay.classList.add('hidden');
+        // Fallback to console and alert
+        console.error(message);
+        alert(message);
     }
 }
 
 /**
- * Clear results from a container
+ * Export functionality
  */
-function clearResults(container) {
-    if (container) {
-        container.innerHTML = '';
-        container.classList.add('hidden');
-        container.classList.remove('has-results');
-    }
-}
-
-/**
- * Show error message
- */
-function showError(message) {
-    console.error('❌ Error:', message);
+function exportResults(type, format) {
+    console.log(`📤 Exporting ${type} results as ${format}`);
     
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-notification';
-    errorDiv.innerHTML = `
-        <div class="error-content">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>${message}</span>
+    const resultsElement = type === 'trend' ? elements.trendResults : elements.audienceResults;
+    if (!resultsElement) return;
+    
+    // Extract text content from results
+    const sections = resultsElement.querySelectorAll('.insight-section');
+    const data = {};
+    
+    sections.forEach(section => {
+        const title = section.querySelector('h4')?.textContent?.replace(/^[^\w]*/, '') || 'Unknown';
+        const content = section.querySelector('.insight-content')?.textContent || '';
+        data[title] = content;
+    });
+    
+    if (format === 'json') {
+        exportAsJSON(data, `${type}-analysis-${Date.now()}.json`);
+    } else if (format === 'csv') {
+        exportAsCSV(data, `${type}-analysis-${Date.now()}.csv`);
+    }
+}
+
+function exportAsJSON(data, filename) {
+    const jsonString = JSON.stringify(data, null, 2);
+    downloadFile(jsonString, filename, 'application/json');
+}
+
+function exportAsCSV(data, filename) {
+    const csv = Object.entries(data)
+        .map(([key, value]) => `"${key}","${value.replace(/"/g, '""')}"`)
+        .join('\n');
+    const csvString = 'Section,Content\n' + csv;
+    downloadFile(csvString, filename, 'text/csv');
+}
+
+function downloadFile(content, filename, contentType) {
+    const blob = new Blob([content], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    console.log(`✅ Downloaded: ${filename}`);
+}
+
+/**
+ * TAB SWITCHING AND HELPER TOOLS
+ * Merged from tabs-fix.js for simplicity
+ */
+
+/**
+ * Initialize tab switching
+ */
+function initTabSwitching() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    if (tabButtons.length === 0 || tabContents.length === 0) {
+        console.error('❌ Tab elements not found');
+        return;
+    }
+    
+    // Initialize tab switching
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetTabId = this.getAttribute('data-tab');
+            if (!targetTabId) return;
+            
+            console.log(`🔄 Switching to tab: ${targetTabId}`);
+            
+            // Remove active from all buttons
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Hide all content
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+                content.style.display = 'none';
+            });
+            
+            // Activate clicked button
+            this.classList.add('active');
+            
+            // Show target content
+            const targetContent = document.getElementById(targetTabId);
+            if (targetContent) {
+                targetContent.style.display = 'block';
+                setTimeout(() => {
+                    targetContent.classList.add('active');
+                }, 50);
+            }
+            
+            console.log(`✅ Tab switched to: ${targetTabId}`);
+        });
+    });
+    
+    // Ensure first tab is active on load
+    const firstButton = tabButtons[0];
+    const firstTabId = firstButton?.getAttribute('data-tab');
+    if (firstTabId) {
+        const firstContent = document.getElementById(firstTabId);
+        if (firstContent) {
+            firstButton.classList.add('active');
+            firstContent.style.display = 'block';
+            firstContent.classList.add('active');
+            
+            // Hide other contents
+            tabContents.forEach(content => {
+                if (content.id !== firstTabId) {
+                    content.style.display = 'none';
+                    content.classList.remove('active');
+                }
+            });
+        }
+    }
+    
+    console.log('✅ Tab switching initialized!');
+}
+
+/**
+ * Toggle advanced input options
+ */
+function toggleAdvancedInputs(type) {
+    console.log(`🔧 Toggling advanced inputs for: ${type}`);
+    
+    const container = document.querySelector(`#${type}Form .advanced-inputs`);
+    if (!container) {
+        console.error(`❌ Advanced inputs container not found for: ${type}`);
+        return;
+    }
+    
+    const button = event.target.closest('button');
+    const icon = button.querySelector('i');
+    const isHidden = container.style.display === 'none' || !container.style.display;
+    
+    if (isHidden) {
+        container.style.display = 'block';
+        container.classList.add('show');
+        icon.className = 'fas fa-chevron-up';
+        button.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Advanced Options';
+        console.log('✅ Advanced options shown');
+    } else {
+        container.classList.remove('show');
+        setTimeout(() => {
+            container.style.display = 'none';
+        }, 300);
+        icon.className = 'fas fa-cog';
+        button.innerHTML = '<i class="fas fa-cog"></i> Advanced Options';
+        console.log('✅ Advanced options hidden');
+    }
+}
+
+/**
+ * Show helper tools menu
+ */
+function showHelperMenu(button) {
+    // Remove existing menu if any
+    const existingMenu = document.querySelector('.helper-menu');
+    if (existingMenu) {
+        existingMenu.remove();
+        return;
+    }
+    
+    const menu = document.createElement('div');
+    menu.className = 'helper-menu';
+    menu.innerHTML = `
+        <div class="helper-item" onclick="fillRandomTrend()">
+            <i class="fas fa-chart-line"></i>
+            <span>Sample Trend</span>
+        </div>
+        <div class="helper-item" onclick="fillRandomAudience()">
+            <i class="fas fa-users"></i>
+            <span>Sample Audience</span>
+        </div>
+        <div class="helper-item" onclick="clearAllInputs()">
+            <i class="fas fa-eraser"></i>
+            <span>Clear All Fields</span>
+        </div>
+        <div class="helper-item" onclick="checkApiStatus()">
+            <i class="fas fa-heartbeat"></i>
+            <span>Check API Status</span>
+        </div>
+        <div class="helper-item" onclick="openDeveloperDocs()">
+            <i class="fas fa-code"></i>
+            <span>Developer Docs</span>
         </div>
     `;
     
-    document.body.appendChild(errorDiv);
-    
-    setTimeout(() => {
-        if (errorDiv.parentNode) {
-            errorDiv.parentNode.removeChild(errorDiv);
+    // Add styles
+    const style = document.createElement('style');
+    style.textContent = `
+        .helper-menu {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 8px;
+            z-index: 1000;
+            min-width: 220px;
+            animation: dropDown 0.3s ease;
+            margin-top: 8px;
         }
-    }, 5000);
-}
-
-console.log('📱 Trend Compass JavaScript loaded successfully!');
-
-// Helper Functions for User Experience
-
-/**
- * Fill trend input with suggestion
- */
-function fillTrend(trend) {
-    const input = document.getElementById('trend-category');
-    if (input) {
-        input.value = trend;
-        input.focus();
-        console.log(`✨ Filled trend: ${trend}`);
+        
+        .helper-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+        
+        .helper-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .helper-item i {
+            margin-right: 12px;
+            width: 16px;
+            color: var(--primary-500);
+        }
+        
+        @keyframes dropDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+    `;
+    
+    if (!document.querySelector('#helper-styles')) {
+        style.id = 'helper-styles';
+        document.head.appendChild(style);
     }
+    
+    // Position relative to the button
+    button.parentElement.style.position = 'relative';
+    button.parentElement.appendChild(menu);
+    
+    // Close menu when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', function closeMenu(e) {
+            if (!menu.contains(e.target) && !button.contains(e.target)) {
+                menu.remove();
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    }, 100);
 }
 
 /**
- * Fill persona input with suggestion
+ * Helper functions for quick actions
  */
-function fillPersona(persona) {
-    const input = document.getElementById('audience-persona');
-    if (input) {
-        input.value = persona;
-        input.focus();
-        console.log(`✨ Filled persona: ${persona}`);
-    }
-}
-
-/**
- * Get random trend suggestion
- */
-function getRandomTrend() {
+function fillRandomTrend() {
     const trends = [
         'Sustainable Fashion',
-        'AI Technology',
+        'AI-Powered Productivity Tools',
+        'Plant-Based Meat Alternatives',
         'Remote Work Culture',
-        'Electric Vehicles',
+        'Electric Vehicle Adoption',
         'Mental Health Awareness',
-        'Plant-Based Diet',
-        'Cryptocurrency',
-        'Social Media Trends',
-        'Virtual Reality',
+        'Cryptocurrency Integration',
+        'Virtual Reality Entertainment',
         'Smart Home Technology',
-        'Minimalist Lifestyle',
-        'Digital Nomad Culture',
-        'Renewable Energy',
-        'Personalized Medicine',
-        'Space Tourism'
+        'Minimalist Lifestyle'
     ];
     
     const randomTrend = trends[Math.floor(Math.random() * trends.length)];
-    fillTrend(randomTrend);
-    
-    // Add visual feedback
-    const button = document.querySelector('.random-btn');
-    if (button) {
-        button.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            button.style.transform = '';
-        }, 150);
+    const input = document.getElementById('trendQuery');
+    if (input) {
+        input.value = randomTrend;
+        input.focus();
+        console.log(`✨ Filled random trend: ${randomTrend}`);
     }
+    document.querySelector('.helper-menu')?.remove();
+}
+
+function fillRandomAudience() {
+    const audiences = [
+        'Tech-savvy millennials interested in sustainable living and productivity apps',
+        'Gen Z fashion enthusiasts who value authenticity and social causes',
+        'Health-conscious professionals aged 25-35 seeking work-life balance',
+        'Gaming enthusiasts and esports fans who embrace new technology',
+        'Creative professionals in design and media looking for inspiration',
+        'Eco-conscious parents focused on sustainable products for their families',
+        'Digital nomads seeking portable and efficient lifestyle solutions',
+        'Fitness enthusiasts interested in wearable technology and wellness apps'
+    ];
+    
+    const randomAudience = audiences[Math.floor(Math.random() * audiences.length)];
+    const input = document.getElementById('audienceDescription');
+    if (input) {
+        input.value = randomAudience;
+        input.focus();
+        console.log(`✨ Filled random audience: ${randomAudience}`);
+    }
+    document.querySelector('.helper-menu')?.remove();
+}
+
+function clearAllInputs() {
+    const inputs = document.querySelectorAll('input[type="text"], textarea, select');
+    inputs.forEach(input => {
+        input.value = '';
+    });
+    
+    // Also clear results
+    const results = document.querySelectorAll('.results-section');
+    results.forEach(result => {
+        result.classList.add('d-none');
+    });
+    
+    console.log('🧹 All inputs cleared');
+    document.querySelector('.helper-menu')?.remove();
+}
+
+function openDeveloperDocs() {
+    // Open the FastAPI docs in a new tab
+    window.open('http://localhost:8000/docs', '_blank');
+    console.log('📖 Opening developer documentation');
+    document.querySelector('.helper-menu')?.remove();
 }
 
 /**
- * Get random persona suggestion
+ * Check API status and update the indicator
  */
-function getRandomPersona() {
-    const personas = [
-        'Gen Z music lovers who are tech-savvy and environmentally conscious',
-        'Tech-savvy millennials interested in productivity and wellness',
-        'Eco-conscious parents focused on sustainable living',
-        'Fashion-forward young professionals in urban areas',
-        'Health-conscious fitness enthusiasts aged 25-35',
-        'Gaming enthusiasts and esports fans',
-        'Creative professionals in design and media',
-        'Outdoor adventure seekers and nature lovers',
-        'Food enthusiasts interested in culinary experiences',
-        'Digital entrepreneurs and startup founders',
-        'Art collectors and cultural enthusiasts',
-        'Pet owners who prioritize animal wellness',
-        'Travel enthusiasts seeking authentic experiences',
-        'Home improvement and DIY enthusiasts',
-        'Wellness-focused individuals practicing mindfulness'
-    ];
+async function checkApiStatus() {
+    console.log('🔍 Checking API status...');
+    const statusElement = document.getElementById('apiStatus');
     
-    const randomPersona = personas[Math.floor(Math.random() * personas.length)];
-    fillPersona(randomPersona);
-    
-    // Add visual feedback
-    const button = document.querySelector('.random-btn');
-    if (button) {
-        button.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            button.style.transform = '';
-        }, 150);
+    if (!statusElement) {
+        console.error('❌ API status element not found');
+        return;
     }
+    
+    const indicator = statusElement.querySelector('.status-indicator');
+    const text = statusElement.querySelector('span:last-child');
+    
+    try {
+        // Update to checking state
+        indicator.className = 'status-indicator status-warning';
+        text.textContent = 'Checking API status...';
+        
+        const response = await fetch('http://localhost:8000/api/status');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Update based on response
+        if (data.status === 'healthy') {
+            indicator.className = 'status-indicator status-healthy';
+            text.textContent = `✅ APIs Ready - Qloo: ${data.services.qloo_api.status}, Gemini: ${data.services.gemini_llm.status}`;
+        } else {
+            indicator.className = 'status-indicator status-warning';
+            text.textContent = '⚠️ Some services in demo mode';
+        }
+        
+        console.log('✅ API status check completed:', data);
+        
+    } catch (error) {
+        console.error('❌ API status check failed:', error);
+        indicator.className = 'status-indicator status-error';
+        text.textContent = '❌ Backend server not running';
+    }
+    
+    // Close helper menu
+    document.querySelector('.helper-menu')?.remove();
 }

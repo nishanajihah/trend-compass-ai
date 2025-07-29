@@ -1,5 +1,5 @@
 """
-Gemini AI service - Talks to Google's AI to analyze trends
+Enhanced Gemini AI service with real API integration and fallback responses
 """
 
 import os
@@ -13,19 +13,87 @@ from datetime import datetime
 env_path = Path(__file__).parent.parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
+try:
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
+except ImportError:
+    GEMINI_AVAILABLE = False
+    print("⚠️ Google Generative AI not available, using fallback responses")
+
 class GeminiService:
-    """Handles AI analysis with reliable demo responses for hackathon"""
+    """Enhanced AI analysis with real Gemini integration and robust fallbacks"""
     
     def __init__(self):
-        """Setup service - prioritize reliability for hackathon"""
-        print("🤖 AI Analysis Service ready for hackathon demo")
+        """Setup service with real API integration and fallback capability"""
+        self.api_key = os.getenv("GEMINI_API_KEY")
+        self.use_real_api = False
+        
+        if self.api_key and self.api_key != "demo_key_for_hackathon" and GEMINI_AVAILABLE:
+            try:
+                genai.configure(api_key=self.api_key)
+                self.model = genai.GenerativeModel('gemini-pro')
+                self.use_real_api = True
+                print("🤖 Gemini AI service initialized with real API")
+            except Exception as e:
+                print(f"⚠️ Gemini API setup failed, using fallback: {e}")
+                self.use_real_api = False
+        else:
+            print("🤖 Using demo responses (add real GEMINI_API_KEY for live AI)")
+    
+    async def _call_real_gemini_api(self, prompt: str) -> Optional[str]:
+        """Call the real Gemini API with error handling"""
+        try:
+            response = self.model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            print(f"Gemini API error: {e}")
+            return None
     
     async def analyze_trend(self, query: str, qloo_data: Dict[str, Any], 
                           industry: Optional[str] = None, 
                           timeframe: Optional[str] = None) -> Dict[str, Any]:
-        """Get trend analysis with Qloo data integration"""
+        """Get trend analysis with Qloo data integration and real AI"""
         
-        # Create comprehensive trend analysis
+        if self.use_real_api:
+            # Create AI prompt for real analysis
+            prompt = f"""
+            Analyze the trend "{query}" using the following cultural data from Qloo:
+            {json.dumps(qloo_data, indent=2)}
+            
+            Industry context: {industry or 'General market'}
+            Timeframe: {timeframe or '6-12 months'}
+            
+            Provide a comprehensive analysis with:
+            1. A summary (2-3 sentences)
+            2. 4 key insights with titles, descriptions, and confidence scores (0.0-1.0)
+            3. 4 actionable recommendations
+            
+            Format as JSON with this structure:
+            {{
+                "summary": "...",
+                "insights": [
+                    {{"title": "...", "description": "...", "confidence": 0.85, "source": "combined"}}
+                ],
+                "recommendations": ["...", "...", "...", "..."]
+            }}
+            """
+            
+            ai_response = await self._call_real_gemini_api(prompt)
+            if ai_response:
+                try:
+                    # Try to parse AI response as JSON
+                    parsed_response = json.loads(ai_response)
+                    parsed_response["query"] = query
+                    parsed_response["timestamp"] = datetime.now().isoformat()
+                    return parsed_response
+                except json.JSONDecodeError:
+                    print("⚠️ AI returned non-JSON response, using fallback")
+        
+        # Fallback to demo responses
+        return self._get_demo_trend_analysis(query, industry, timeframe)
+    
+    def _get_demo_trend_analysis(self, query: str, industry: Optional[str], timeframe: Optional[str]) -> Dict[str, Any]:
+        """Generate comprehensive demo trend analysis"""
         return {
             "query": query,
             "summary": f"Analysis of '{query}' reveals significant growth momentum in the {industry or 'market'} sector. Qloo's cultural data shows strong resonance with key demographics, indicating sustained interest and adoption over {timeframe or 'the coming months'}.",
@@ -38,7 +106,7 @@ class GeminiService:
                     "source": "combined"
                 },
                 {
-                    "title": "Cultural Resonance",
+                    "title": "Cultural Resonance", 
                     "description": f"Qloo's cultural affinity data reveals that {query} aligns with emerging lifestyle preferences and values, creating authentic connections with target audiences.",
                     "confidence": 0.82,
                     "source": "qloo"
@@ -67,8 +135,48 @@ class GeminiService:
     async def generate_audience_insights(self, target_audience: str, qloo_data: Dict[str, Any],
                                        product_category: Optional[str] = None,
                                        region: Optional[str] = None) -> Dict[str, Any]:
-        """Get audience insights with Qloo data integration"""
+        """Get audience insights with Qloo data integration and real AI"""
         
+        if self.use_real_api:
+            # Create AI prompt for real analysis
+            prompt = f"""
+            Analyze the audience "{target_audience}" using the following cultural data from Qloo:
+            {json.dumps(qloo_data, indent=2)}
+            
+            Product category: {product_category or 'General products'}
+            Region: {region or 'Global'}
+            
+            Provide comprehensive audience insights with:
+            1. A summary (2-3 sentences)
+            2. 4 cultural affinities with titles, descriptions, and confidence scores (0.0-1.0)
+            3. 4 actionable recommendations
+            
+            Format as JSON with this structure:
+            {{
+                "summary": "...",
+                "cultural_affinities": [
+                    {{"title": "...", "description": "...", "confidence": 0.85, "source": "combined"}}
+                ],
+                "recommendations": ["...", "...", "...", "..."]
+            }}
+            """
+            
+            ai_response = await self._call_real_gemini_api(prompt)
+            if ai_response:
+                try:
+                    # Try to parse AI response as JSON
+                    parsed_response = json.loads(ai_response)
+                    parsed_response["target_audience"] = target_audience
+                    parsed_response["timestamp"] = datetime.now().isoformat()
+                    return parsed_response
+                except json.JSONDecodeError:
+                    print("⚠️ AI returned non-JSON response, using fallback")
+        
+        # Fallback to demo responses
+        return self._get_demo_audience_analysis(target_audience, product_category, region)
+    
+    def _get_demo_audience_analysis(self, target_audience: str, product_category: Optional[str], region: Optional[str]) -> Dict[str, Any]:
+        """Generate comprehensive demo audience analysis"""
         return {
             "target_audience": target_audience,
             "summary": f"Analysis of {target_audience} reveals distinct cultural preferences and digital behaviors. Qloo's data shows this demographic has strong engagement with {product_category or 'innovative products'} and demonstrates clear patterns in {region or 'their region'}.",

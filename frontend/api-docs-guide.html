@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .guide-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .step h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .endpoint-link {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 10px 10px 0;
+            transition: background 0.3s;
+        }
+        .endpoint-link:hover {
+            background: #5a67d8;
+            text-decoration: none;
+            color: white;
+        }
+        .status-check {
+            background: #e8f5e8;
+            border-left-color: #28a745;
+            border: 1px solid #28a745;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="guide-container">
+        <h1>📚 API Documentation Guide</h1>
+
+        <div class="step">
+            <h3>Step 1: Start the Backend Server</h3>
+            <p>Before accessing API documentation, make sure your backend server is running:</p>
+            <div class="code">
+                cd backend<br>
+                python -m uvicorn main:app --reload
+            </div>
+            <p>Or use the VS Code task: <strong>"Start FastAPI Server"</strong></p>
+        </div>
+
+        <div class="step status-check">
+            <h3>Step 2: Verify Server is Running</h3>
+            <p>Check if the server is running by visiting:</p>
+            <a href="http://localhost:8000/" class="endpoint-link" target="_blank">
+                🏠 http://localhost:8000/
+            </a>
+            <p>You should see a "Welcome to Trend Compass API" message.</p>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Access API Documentation</h3>
+            <p>Once the server is running, you can access the interactive API documentation:</p>
+            
+            <h4>🚀 Swagger UI (Interactive Documentation):</h4>
+            <a href="http://localhost:8000/docs" class="endpoint-link" target="_blank">
+                📖 http://localhost:8000/docs
+            </a>
+            <p>This provides an interactive interface where you can test API endpoints directly.</p>
+
+            <h4>📋 ReDoc (Clean Documentation):</h4>
+            <a href="http://localhost:8000/redoc" class="endpoint-link" target="_blank">
+                📋 http://localhost:8000/redoc
+            </a>
+            <p>This provides a clean, readable version of the API documentation.</p>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Test API Endpoints</h3>
+            <p>Available endpoints you can test:</p>
+            <ul>
+                <li><strong>/api/status</strong> - Check API service status</li>
+                <li><strong>/api/trends/analyze</strong> - Analyze trending topics</li>
+                <li><strong>/api/audience/analyze</strong> - Generate audience insights</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Troubleshooting</h3>
+            <p><strong>If you can't access the docs:</strong></p>
+            <ul>
+                <li>Make sure the backend server is running on port 8000</li>
+                <li>Check the terminal for any error messages</li>
+                <li>Verify no other application is using port 8000</li>
+                <li>Try restarting the server</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>📱 Using the Frontend</h3>
+            <p>To use the frontend application:</p>
+            <div class="code">
+                cd frontend<br>
+                python -m http.server 8080
+            </div>
+            <p>Then visit: <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></p>
+        </div>
+    </div>
+</body>
+</html>
