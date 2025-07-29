@@ -1,249 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-      <head>
-            <meta charset="UTF-8" />
-            <meta
-                  name="viewport"
-                  content="width=device-width, initial-scale=1.0"
-            />
-            <title>Trend Compass - AI-Powered Trend Forecasting</title>
-            <link rel="stylesheet" href="css/styles.css" />
-            <!-- Font Awesome for icons -->
-            <link
-                  rel="stylesheet"
-                  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-            />
-            <!-- Google Fonts -->
-            <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link
-                  rel="preconnect"
-                  href="https://fonts.gstatic.com"
-                  crossorigin
-            />
-            <link
-                  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-                  rel="stylesheet"
-            />
-      </head>
-      <body>
-            <div class="container">
-                  <header>
-                        <div class="logo-container">
-                              <div class="logo">
-                                    <i class="fas fa-compass"></i>
-                                    <span>Trend Compass</span>
-                              </div>
-                              <p class="tagline">
-                                    AI-Powered Trend Forecasting & Audience
-                                    Insights
-                              </p>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔮 Trend Compass - AI-Powered Trend Forecasting</title>
+    
+    <!-- Stylesheets - Modular CSS Architecture -->
+    <link rel="stylesheet" href="css/glassmorphism-base.css" />
+    <link rel="stylesheet" href="css/typography.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/utilities.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+    
+    <!-- External Resources -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    
+    <!-- SEO and Performance -->
+    <meta name="description" content="Next-generation AI-powered trend forecasting and cultural insights platform combining Qloo's data with Gemini LLM." />
+    <meta name="keywords" content="trend forecasting, AI insights, cultural data, audience analysis" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
+</head>
+<body>
+    <!-- Main Application Container -->
+    <div class="container">
+        <!-- Enhanced Header with Glassmorphism -->
+        <header class="header">
+            <h1 class="gradient-text">🔮 Trend Compass</h1>
+            <p class="subtitle">Next-Gen AI-Powered Trend Forecasting & Cultural Insights</p>
+            
+            <!-- Enhanced Navigation -->
+            <nav class="nav-tabs">
+                <button class="tab-button active neomorphic-hover transition-all" data-tab="trend-tab">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Trend Analysis</span>
+                </button>
+                <button class="tab-button neomorphic-hover transition-all" data-tab="audience-tab">
+                    <i class="fas fa-users"></i>
+                    <span>Audience Insights</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Trend Analysis Tab -->
+            <div id="trend-tab" class="tab-content active">
+                <section class="card interactive-card hover-lift">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-chart-line"></i>
                         </div>
-                        <nav>
-                              <button
-                                    class="tab-button active"
-                                    data-tab="trend-tab"
-                              >
-                                    Trend Analysis
-                              </button>
-                              <button
-                                    class="tab-button"
-                                    data-tab="audience-tab"
-                              >
-                                    Audience Insights
-                              </button>
-                        </nav>
-                  </header>
-
-                  <main>
-                        <!-- Trend Analysis Tab -->
-                        <section id="trend-tab" class="tab-content active">
-                              <div class="input-section">
-                                    <h2>Analyze a Trend</h2>
-                                    <p>
-                                          Enter a trend, topic, or concept to
-                                          analyze its cultural impact and future
-                                          trajectory.
-                                    </p>
-
-                                    <form id="trend-form">
-                                          <div class="input-group">
-                                                <label for="trend-query"
-                                                >Trend or Topic</label>
-                                                <input
-                                                      type="text"
-                                                      id="trend-query"
-                                                      placeholder="E.g., Sustainable fashion, AI in healthcare, Plant-based diets"
-                                                      required
-                                                />
-                                          </div>
-
-                                          <div class="input-row">
-                                                <div class="input-group">
-                                                      <label
-                                                            for="trend-industry"
-                                                      >Industry
-                                                            (Optional)</label>
-                                                      <input
-                                                            type="text"
-                                                            id="trend-industry"
-                                                            placeholder="E.g., Fashion, Technology, Food"
-                                                      />
-                                                </div>
-
-                                                <div class="input-group">
-                                                      <label
-                                                            for="trend-timeframe"
-                                                      >Timeframe
-                                                            (Optional)</label>
-                                                      <select id="trend-timeframe">
-                                                            <option value="">
-                                                                  Select a
-                                                                  timeframe
-                                                            </option>
-                                                            <option value="Next 3 months">
-                                                                  Next 3 months
-                                                            </option>
-                                                            <option value="Next 6 months">
-                                                                  Next 6 months
-                                                            </option>
-                                                            <option value="Next 1 year">
-                                                                  Next 1 year
-                                                            </option>
-                                                            <option value="Next 2-3 years">
-                                                                  Next 2-3 years
-                                                            </option>
-                                                      </select>
-                                                </div>
-                                          </div>
-
-                                          <button
-                                                type="submit"
-                                                class="primary-button"
-                                                id="analyze-trend-button"
-                                          >
-                                                <span class="button-text"
-                                                >Analyze Trend</span>
-                                                <span class="button-icon"><i
-                                                            class="fas fa-arrow-right"
-                                                      ></i></span>
-                                          </button>
-                                    </form>
-                              </div>
-
-                              <div class="results-section" id="trend-results">
-                                    <!-- Results will be dynamically inserted here by JS -->
-                              </div>
-                        </section>
-
-                        <!-- Audience Insights Tab -->
-                        <section id="audience-tab" class="tab-content">
-                              <div class="input-section">
-                                    <h2>Discover Audience Insights</h2>
-                                    <p>
-                                          Describe your target audience to
-                                          uncover their cultural affinities and
-                                          preferences.
-                                    </p>
-
-                                    <form id="audience-form">
-                                          <div class="input-group">
-                                                <label
-                                                      for="audience-description"
-                                                >Target Audience</label>
-                                                <input
-                                                      type="text"
-                                                      id="audience-description"
-                                                      placeholder="E.g., Gen Z fashion enthusiasts, Urban professionals 25-35, Eco-conscious parents"
-                                                      required
-                                                />
-                                          </div>
-
-                                          <div class="input-row">
-                                                <div class="input-group">
-                                                      <label
-                                                            for="audience-product"
-                                                      >Product Category
-                                                            (Optional)</label>
-                                                      <input
-                                                            type="text"
-                                                            id="audience-product"
-                                                            placeholder="E.g., Footwear, Streaming content, Home goods"
-                                                      />
-                                                </div>
-
-                                                <div class="input-group">
-                                                      <label
-                                                            for="audience-region"
-                                                      >Region (Optional)</label>
-                                                      <select id="audience-region">
-                                                            <option value="">
-                                                                  Select a
-                                                                  region
-                                                            </option>
-                                                            <option value="North America">
-                                                                  North America
-                                                            </option>
-                                                            <option value="Europe">
-                                                                  Europe
-                                                            </option>
-                                                            <option value="Asia">
-                                                                  Asia
-                                                            </option>
-                                                            <option value="Latin America">
-                                                                  Latin America
-                                                            </option>
-                                                            <option value="Global">
-                                                                  Global
-                                                            </option>
-                                                      </select>
-                                                </div>
-                                          </div>
-
-                                          <button
-                                                type="submit"
-                                                class="primary-button"
-                                                id="analyze-audience-button"
-                                          >
-                                                <span class="button-text"
-                                                >Get Insights</span>
-                                                <span class="button-icon"><i
-                                                            class="fas fa-arrow-right"
-                                                      ></i></span>
-                                          </button>
-                                    </form>
-                              </div>
-
-                              <div
-                                    class="results-section"
-                                    id="audience-results"
-                              >
-                                    <!-- Results will be dynamically inserted here by JS -->
-                              </div>
-                        </section>
-                  </main>
-
-                  <footer>
-                        <p>
-                              Trend Compass • Powered by Qloo Cultural Affinity
-                              Data & Gemini AI
-                        </p>
-                        <div class="footer-links">
-                              <a href="#" class="github-link" target="_blank">
-                                    <i class="fab fa-github"></i>
-                                    <span>GitHub</span>
-                              </a>
-                              <span class="separator">•</span>
-                              <a href="#" class="about-link">About</a>
+                        <div class="card-info">
+                            <h2>Trend Analysis</h2>
+                            <p>Discover emerging trends and forecast their cultural impact with AI-powered insights</p>
                         </div>
-                  </footer>
+                    </div>
+                    
+                    <form id="trendForm" class="glass-form">
+                        <div class="input-group">
+                            <label class="input-label icon-text">
+                                <i class="fas fa-search"></i>
+                                <span>What trend would you like to analyze?</span>
+                            </label>
+                            <div class="input-row">
+                                <div class="input-container">
+                                    <input 
+                                        type="text" 
+                                        id="trendQuery" 
+                                        class="input-field transition-all"
+                                        placeholder="e.g., Plant-based meat alternatives, Sustainable fashion, Remote work culture..."
+                                        required
+                                        autocomplete="off"
+                                    />
+                                </div>
+                                <button type="submit" class="btn btn-accent submit-button neomorphic-hover transition-all">
+                                    <i class="fas fa-magic"></i>
+                                    <span>Analyze Trend</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Loading State -->
+                    <div id="trendLoading" class="loading-overlay d-none">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    
+                    <!-- Results Container -->
+                    <div id="trendResults" class="results-section d-none">
+                        <div class="results-container">
+                            <div class="results-header">
+                                <i class="fas fa-brain text-accent"></i>
+                                <h3>AI Analysis Results</h3>
+                            </div>
+                            <div class="results-content" id="trendResultsContent">
+                                <!-- Results will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            <!-- Loading overlay -->
-            <div class="loading-overlay" id="loading-overlay">
-                  <div class="spinner"></div>
-                  <p>Analyzing with Trend Compass...</p>
+            <!-- Audience Insights Tab -->
+            <div id="audience-tab" class="tab-content">
+                <section class="card interactive-card hover-lift">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="card-info">
+                            <h2>Audience Insights</h2>
+                            <p>Understand your target audience through deep cultural affinity analysis</p>
+                        </div>
+                    </div>
+                    
+                    <form id="audienceForm" class="glass-form">
+                        <div class="input-group">
+                            <label class="input-label icon-text">
+                                <i class="fas fa-user-friends"></i>
+                                <span>Describe your target audience</span>
+                            </label>
+                            <div class="input-row">
+                                <div class="input-container">
+                                    <textarea 
+                                        id="audienceDescription" 
+                                        class="input-field textarea-field transition-all"
+                                        placeholder="e.g., Tech-savvy millennials interested in sustainable living, Gen Z fashion enthusiasts, health-conscious professionals..."
+                                        required
+                                    ></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success submit-button neomorphic-hover transition-all">
+                                    <i class="fas fa-search-plus"></i>
+                                    <span>Analyze Audience</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Loading State -->
+                    <div id="audienceLoading" class="loading-overlay d-none">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    
+                    <!-- Results Container -->
+                    <div id="audienceResults" class="results-section d-none">
+                        <div class="results-container">
+                            <div class="results-header">
+                                <i class="fas fa-chart-pie text-accent"></i>
+                                <h3>Audience Analysis Results</h3>
+                            </div>
+                            <div class="results-content" id="audienceResultsContent">
+                                <!-- Results will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
+        </main>
+        
+        <!-- Optional: Floating Action Button for Quick Actions -->
+        <button class="fab tooltip neomorphic-hover transition-all" title="Quick Actions" aria-label="Quick Actions">
+            <i class="fas fa-plus"></i>
+            <span class="tooltip-text">Quick Actions</span>
+        </button>
+    </div>
 
-            <script src="js/app.js"></script>
-      </body>
+    <!-- Error/Success Message Container -->
+    <div id="messageContainer" class="fixed top-4 right-4 z-50 d-none">
+        <!-- Dynamic messages will be inserted here -->
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+</body>
 </html>

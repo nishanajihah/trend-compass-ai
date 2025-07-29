@@ -7,15 +7,15 @@ from fastapi import APIRouter, HTTPException, Depends
 from datetime import datetime
 from typing import Dict, Any
 
-from models.schemas import (
+from backend.models.schemas import (
     TrendAnalysisRequest,
     TrendAnalysisResponse,
     AudienceInsightRequest,
     AudienceInsightResponse,
     InsightPoint
 )
-from services.llm_service import GeminiService
-from services.qloo_service import QlooService
+from backend.services.llm_service import GeminiService
+from backend.services.qloo_service import QlooService
 
 # Create router
 router = APIRouter(
@@ -33,22 +33,31 @@ def get_qloo_service():
     """Dependency for Qloo service."""
     return QlooService()
 
-@router.post("/analyze/trend", response_model=TrendAnalysisResponse)
+@router.post(
+    "/trends/analyze", 
+    response_model=TrendAnalysisResponse,
+    summary="📊 Analyze Market Trends",
+    description="""
+    **Analyze any trend to get strategic insights and forecasts**
+    
+    🔍 **Input**: Any trend or market category (e.g., "Sustainable Fashion", "AI Technology")  
+    📈 **Output**: Market insights, cultural context, and actionable recommendations
+    
+    **Perfect for**: Marketers, business strategists, content creators
+    """,
+    responses={
+        200: {"description": "✅ Success - Comprehensive trend analysis"},
+        400: {"description": "❌ Bad Request - Check your input"},
+        500: {"description": "⚠️ Server Error - Try again later"}
+    }
+)
 async def analyze_trend(
     request: TrendAnalysisRequest,
     llm_service: GeminiService = Depends(get_llm_service),
     qloo_service: QlooService = Depends(get_qloo_service)
 ):
     """
-    Analyze a trend using both Qloo data and LLM insights.
-    
-    Args:
-        request: TrendAnalysisRequest with query and optional parameters
-        llm_service: Injected GeminiService
-        qloo_service: Injected QlooService
-        
-    Returns:
-        TrendAnalysisResponse with combined insights
+    Analyze trends with AI-powered insights and cultural context.
     """
     try:
         # Step 1: Get cultural affinity data from Qloo
@@ -83,22 +92,31 @@ async def analyze_trend(
             detail="An error occurred during trend analysis."
         )
 
-@router.post("/analyze/audience", response_model=AudienceInsightResponse)
+@router.post(
+    "/audience/analyze", 
+    response_model=AudienceInsightResponse,
+    summary="👥 Deep Audience Insights",
+    description="""
+    **Understand your target audience with cultural intelligence**
+    
+    🎯 **Input**: Describe your audience (e.g., "Gen Z music lovers", "Tech millennials")  
+    🧠 **Output**: Cultural preferences, behaviors, and engagement strategies
+    
+    **Perfect for**: Marketing teams, product managers, brand strategists
+    """,
+    responses={
+        200: {"description": "✅ Success - Deep audience insights"},
+        400: {"description": "❌ Bad Request - Provide clear audience description"},
+        500: {"description": "⚠️ Server Error - Try again later"}
+    }
+)
 async def analyze_audience(
     request: AudienceInsightRequest,
     llm_service: GeminiService = Depends(get_llm_service),
     qloo_service: QlooService = Depends(get_qloo_service)
 ):
     """
-    Analyze an audience using both Qloo data and LLM insights.
-    
-    Args:
-        request: AudienceInsightRequest with target audience and optional parameters
-        llm_service: Injected GeminiService
-        qloo_service: Injected QlooService
-        
-    Returns:
-        AudienceInsightResponse with combined insights
+    Analyze audiences with cultural affinity data and behavioral insights.
     """
     try:
         # Step 1: Get cultural affinity data from Qloo

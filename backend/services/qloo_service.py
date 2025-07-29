@@ -62,12 +62,12 @@ class QlooService:
                 else:
                     print(f"Qloo API error: {response.status_code} - {response.text}")
                     # Fall back to simulated data if API call fails
-                    return self._get_fallback_trend_data(query)
+                    return self._get_simulated_trend_data(query)
                     
         except Exception as e:
             # Log the error and fall back to simulated data
             print(f"Error calling Qloo API: {str(e)}")
-            return self._get_fallback_trend_data(query)
+            return self._get_simulated_trend_data(query)
     
     async def get_audience_data(self, audience: str, product_category: Optional[str] = None,
                               region: Optional[str] = None) -> Dict[str, Any]:
@@ -101,12 +101,12 @@ class QlooService:
                 else:
                     print(f"Qloo API error: {response.status_code} - {response.text}")
                     # Fall back to simulated data if API call fails
-                    return self._get_fallback_audience_data(audience)
+                    return self._get_simulated_audience_data(audience)
                     
         except Exception as e:
             # Log the error and fall back to simulated data
             print(f"Error calling Qloo API: {str(e)}")
-            return self._get_fallback_audience_data(audience)
+            return self._get_simulated_audience_data(audience)
     
     def _get_simulated_trend_data(self, query: str, industry: Optional[str] = None) -> Dict[str, Any]:
         """
