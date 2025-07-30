@@ -32,7 +32,9 @@ class QlooService:
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "X-API-Key": self.api_key,  # Also include as X-API-Key header
+            "api-key": self.api_key     # Some APIs expect this format
         }
         
         if self.api_key and self.api_key != "demo_key_for_hackathon":

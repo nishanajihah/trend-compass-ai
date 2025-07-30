@@ -1,39 +1,44 @@
 /**
  * Trend Compass - Clean Application JavaScript
- * Fixed version without duplicates and with working API endpoints
+ * Production version with minimal logging and proper error handling
  */
 
 // API Configuration
 const API_BASE_URL = 'http://localhost:8000';
 
-// DOM Elements - Clean mapping
-const elements = {
-    // Trend Analysis
-    trendForm: document.getElementById('trendForm'),
-    trendQuery: document.getElementById('trendQuery'),
-    trendIndustry: document.getElementById('trendIndustry'),
-    trendTimeframe: document.getElementById('trendTimeframe'),
-    trendCharCount: document.getElementById('trendCharCount'),
-    trendValidation: document.getElementById('trendValidation'),
-    trendLoading: document.getElementById('trendLoading'),
-    trendResults: document.getElementById('trendResults'),
-    
-    // Audience Analysis
-    audienceForm: document.getElementById('audienceForm'),
-    audienceDescription: document.getElementById('audienceDescription'),
-    audienceCategory: document.getElementById('audienceCategory'),
-    audienceRegion: document.getElementById('audienceRegion'),
-    audienceCharCount: document.getElementById('audienceCharCount'),
-    audienceValidation: document.getElementById('audienceValidation'),
-    audienceLoading: document.getElementById('audienceLoading'),
-    audienceResults: document.getElementById('audienceResults')
-};
+// DOM Elements - Will be initialized after DOM loads
+let elements = {};
 
 /**
  * Initialize the application
  */
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Initializing Trend Compass App...');
+    
+    // Initialize DOM elements after DOM is ready
+    elements = {
+        // Trend Analysis
+        trendForm: document.getElementById('trendForm'),
+        trendQuery: document.getElementById('trendQuery'),
+        trendIndustry: document.getElementById('trendIndustry'),
+        trendTimeframe: document.getElementById('trendTimeframe'),
+        trendCharCount: document.getElementById('trendCharCount'),
+        trendValidation: document.getElementById('trendValidation'),
+        trendLoading: document.getElementById('trendLoading'),
+        trendResults: document.getElementById('trendResults'),
+        trendResultsContent: document.getElementById('trendResultsContent'),
+        
+        // Audience Analysis
+        audienceForm: document.getElementById('audienceForm'),
+        audienceDescription: document.getElementById('audienceDescription'),
+        audienceCategory: document.getElementById('audienceCategory'),
+        audienceRegion: document.getElementById('audienceRegion'),
+        audienceCharCount: document.getElementById('audienceCharCount'),
+        audienceValidation: document.getElementById('audienceValidation'),
+        audienceLoading: document.getElementById('audienceLoading'),
+        audienceResults: document.getElementById('audienceResults'),
+        audienceResultsContent: document.getElementById('audienceResultsContent')
+    };
     
     // Initialize all features
     initTabSwitching();
@@ -46,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
         checkApiStatus();
     }, 500);
     
-    console.log('✅ Trend Compass App initialized successfully!');
+    console.log('✅ App initialized successfully!');
 });
 
 /**
@@ -56,13 +61,11 @@ function initializeEventListeners() {
     // Trend form submission
     if (elements.trendForm) {
         elements.trendForm.addEventListener('submit', handleTrendSubmission);
-        console.log('✅ Trend form listener added');
     }
     
     // Audience form submission
     if (elements.audienceForm) {
         elements.audienceForm.addEventListener('submit', handleAudienceSubmission);
-        console.log('✅ Audience form listener added');
     }
 }
 
@@ -189,54 +192,62 @@ function showValidationMessage(element, message, type) {
  */
 async function handleTrendSubmission(e) {
     e.preventDefault();
-    console.log('🔍 Processing trend analysis request...');
-    
-    // Hide advanced options after submission
-    const advancedInputs = document.querySelector('#trendForm .advanced-inputs');
-    if (advancedInputs && advancedInputs.style.display === 'block') {
-        toggleAdvancedInputs('trend');
-    }
     
     // Validate input
     if (!validateTrendInput()) {
-        console.log('❌ Trend validation failed');
         return;
     }
     
     const formData = {
-        trend_query: elements.trendQuery.value.trim(),
-        industry: elements.trendIndustry?.value || '',
-        timeframe: elements.trendTimeframe?.value || ''
+        query: elements.trendQuery.value.trim(),
+        industry: elements.trendIndustry?.value?.trim() || null,
+        timeframe: elements.trendTimeframe?.value?.trim() || null
     };
-    
-    console.log('📊 Trend data:', formData);
     
     // Show loading state
     showLoading(elements.trendLoading);
     hideResults(elements.trendResults);
     
     try {
+        // Add 10 second timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+        }, 10000);
+        
         const response = await fetch(`${API_BASE_URL}/api/trends/analyze`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(formData),
+            signal: controller.signal
         });
         
+        clearTimeout(timeoutId);
+        
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const errorData = await response.json().catch(() => null);
+            throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
         
         const result = await response.json();
-        console.log('✅ Trend analysis completed:', result);
-        
-        // Display results
         displayTrendResults(result);
         
     } catch (error) {
-        console.error('❌ Trend analysis failed:', error);
-        showErrorMessage('Failed to analyze trend. Please check if the backend server is running and try again.');
+        console.error('Trend analysis failed:', error);
+        
+        let errorMessage = 'Failed to analyze trend. ';
+        if (error.name === 'AbortError') {
+            errorMessage = 'Request timed out. The server may be experiencing heavy load. Please try again.';
+        } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Unable to connect to the server. Please check your connection and try again.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        showErrorMessage(errorMessage);
+        
     } finally {
         hideLoading(elements.trendLoading);
     }
@@ -247,54 +258,62 @@ async function handleTrendSubmission(e) {
  */
 async function handleAudienceSubmission(e) {
     e.preventDefault();
-    console.log('👥 Processing audience analysis request...');
-    
-    // Hide advanced options after submission
-    const advancedInputs = document.querySelector('#audienceForm .advanced-inputs');
-    if (advancedInputs && advancedInputs.style.display === 'block') {
-        toggleAdvancedInputs('audience');
-    }
     
     // Validate input
     if (!validateAudienceInput()) {
-        console.log('❌ Audience validation failed');
         return;
     }
     
     const formData = {
-        audience_description: elements.audienceDescription.value.trim(),
-        product_category: elements.audienceCategory?.value || '',
-        region: elements.audienceRegion?.value || ''
+        target_audience: elements.audienceDescription.value.trim(),
+        product_category: elements.audienceCategory?.value?.trim() || null,
+        region: elements.audienceRegion?.value?.trim() || null
     };
-    
-    console.log('👥 Audience data:', formData);
     
     // Show loading state
     showLoading(elements.audienceLoading);
     hideResults(elements.audienceResults);
     
     try {
+        // Add 10 second timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+        }, 10000);
+        
         const response = await fetch(`${API_BASE_URL}/api/audience/analyze`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(formData),
+            signal: controller.signal
         });
         
+        clearTimeout(timeoutId);
+        
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const errorData = await response.json().catch(() => null);
+            throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
         
         const result = await response.json();
-        console.log('✅ Audience analysis completed:', result);
-        
-        // Display results
         displayAudienceResults(result);
         
     } catch (error) {
-        console.error('❌ Audience analysis failed:', error);
-        showErrorMessage('Failed to analyze audience. Please check if the backend server is running and try again.');
+        console.error('Audience analysis failed:', error);
+        
+        let errorMessage = 'Failed to analyze audience. ';
+        if (error.name === 'AbortError') {
+            errorMessage = 'Request timed out. The server may be experiencing heavy load. Please try again.';
+        } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Unable to connect to the server. Please check your connection and try again.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        showErrorMessage(errorMessage);
+        
     } finally {
         hideLoading(elements.audienceLoading);
     }
@@ -304,120 +323,129 @@ async function handleAudienceSubmission(e) {
  * Display trend analysis results
  */
 function displayTrendResults(data) {
-    if (!elements.trendResults) return;
+    if (!elements.trendResultsContent || !elements.trendResults) {
+        console.error('Results elements not found');
+        return;
+    }
     
     const resultsHTML = `
-        <div class="results-header">
-            <div class="results-title">
-                <h3>🎯 Trend Analysis Results</h3>
-                <div class="results-meta">
-                    <span class="analysis-date">Generated: ${new Date().toLocaleDateString()}</span>
-                    <div class="export-options">
-                        <button onclick="exportResults('trend', 'json')" class="btn-export" title="Export as JSON">
-                            <i class="fas fa-download"></i> JSON
-                        </button>
-                        <button onclick="exportResults('trend', 'csv')" class="btn-export" title="Export as CSV">
-                            <i class="fas fa-file-csv"></i> CSV
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="insight-section">
+            <h4><i class="fas fa-lightbulb"></i> Summary</h4>
+            <div class="insight-content">${data.summary || 'Analysis data not available'}</div>
         </div>
         
-        <div class="results-content">
+        ${data.insights && data.insights.length > 0 ? `
             <div class="insight-section">
-                <h4><i class="fas fa-lightbulb"></i> Key Insights</h4>
-                <div class="insight-content">${data.analysis || 'Analysis data not available'}</div>
+                <h4><i class="fas fa-chart-line"></i> Key Insights</h4>
+                <div class="insight-content">
+                    ${data.insights.map(insight => `
+                        <div class="insight-item">
+                            <strong>${insight.title}</strong>
+                            <p>${insight.description}</p>
+                            <small>Confidence: ${Math.round(insight.confidence * 100)}%</small>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
-            
-            ${data.forecast ? `
-                <div class="insight-section">
-                    <h4><i class="fas fa-chart-line"></i> Forecast</h4>
-                    <div class="insight-content">${data.forecast}</div>
+        ` : ''}
+        
+        ${data.recommendations && data.recommendations.length > 0 ? `
+            <div class="insight-section">
+                <h4><i class="fas fa-star"></i> Recommendations</h4>
+                <div class="insight-content">
+                    <ul>
+                        ${data.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
                 </div>
-            ` : ''}
-            
-            ${data.cultural_context ? `
-                <div class="insight-section">
-                    <h4><i class="fas fa-globe"></i> Cultural Context</h4>
-                    <div class="insight-content">${data.cultural_context}</div>
-                </div>
-            ` : ''}
-            
-            ${data.recommendations ? `
-                <div class="insight-section">
-                    <h4><i class="fas fa-star"></i> Recommendations</h4>
-                    <div class="insight-content">${data.recommendations}</div>
-                </div>
-            ` : ''}
-        </div>
+            </div>
+        ` : ''}
     `;
     
-    elements.trendResults.innerHTML = resultsHTML;
-    showResults(elements.trendResults);
+    elements.trendResultsContent.innerHTML = resultsHTML;
+    
+    // Show results
+    elements.trendResults.classList.remove('d-none');
+    elements.trendResults.style.display = 'block';
+    
+    // Store data for export
+    window.lastTrendData = data;
     
     // Scroll to results
-    elements.trendResults.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+        elements.trendResults.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
 }
 
 /**
  * Display audience analysis results
  */
 function displayAudienceResults(data) {
-    if (!elements.audienceResults) return;
+    if (!elements.audienceResultsContent || !elements.audienceResults) {
+        console.error('Results elements not found');
+        return;
+    }
     
     const resultsHTML = `
-        <div class="results-header">
-            <div class="results-title">
-                <h3>👥 Audience Analysis Results</h3>
-                <div class="results-meta">
-                    <span class="analysis-date">Generated: ${new Date().toLocaleDateString()}</span>
-                    <div class="export-options">
-                        <button onclick="exportResults('audience', 'json')" class="btn-export" title="Export as JSON">
-                            <i class="fas fa-download"></i> JSON
-                        </button>
-                        <button onclick="exportResults('audience', 'csv')" class="btn-export" title="Export as CSV">
-                            <i class="fas fa-file-csv"></i> CSV
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="insight-section">
+            <h4><i class="fas fa-users"></i> Summary</h4>
+            <div class="insight-content">${data.summary || 'Analysis data not available'}</div>
         </div>
         
-        <div class="results-content">
+        ${data.cultural_affinities && data.cultural_affinities.length > 0 ? `
             <div class="insight-section">
-                <h4><i class="fas fa-users"></i> Audience Insights</h4>
-                <div class="insight-content">${data.analysis || 'Analysis data not available'}</div>
+                <h4><i class="fas fa-heart"></i> Cultural Affinities</h4>
+                <div class="insight-content">
+                    ${data.cultural_affinities.map(affinity => `
+                        <div class="insight-item">
+                            <strong>${affinity.title}</strong>
+                            <p>${affinity.description}</p>
+                            <small>Confidence: ${Math.round(affinity.confidence * 100)}%</small>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
-            
-            ${data.demographics ? `
-                <div class="insight-section">
-                    <h4><i class="fas fa-chart-pie"></i> Demographics</h4>
-                    <div class="insight-content">${data.demographics}</div>
+        ` : ''}
+        
+        ${data.insights && data.insights.length > 0 ? `
+            <div class="insight-section">
+                <h4><i class="fas fa-lightbulb"></i> Key Insights</h4>
+                <div class="insight-content">
+                    ${data.insights.map(insight => `
+                        <div class="insight-item">
+                            <strong>${insight.title}</strong>
+                            <p>${insight.description}</p>
+                            <small>Confidence: ${Math.round(insight.confidence * 100)}%</small>
+                        </div>
+                    `).join('')}
                 </div>
-            ` : ''}
-            
-            ${data.cultural_affinities ? `
-                <div class="insight-section">
-                    <h4><i class="fas fa-heart"></i> Cultural Affinities</h4>
-                    <div class="insight-content">${data.cultural_affinities}</div>
+            </div>
+        ` : ''}
+        
+        ${data.recommendations && data.recommendations.length > 0 ? `
+            <div class="insight-section">
+                <h4><i class="fas fa-star"></i> Recommendations</h4>
+                <div class="insight-content">
+                    <ul>
+                        ${data.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
                 </div>
-            ` : ''}
-            
-            ${data.recommendations ? `
-                <div class="insight-section">
-                    <h4><i class="fas fa-bullseye"></i> Targeting Recommendations</h4>
-                    <div class="insight-content">${data.recommendations}</div>
-                </div>
-            ` : ''}
-        </div>
+            </div>
+        ` : ''}
     `;
     
-    elements.audienceResults.innerHTML = resultsHTML;
-    showResults(elements.audienceResults);
+    elements.audienceResultsContent.innerHTML = resultsHTML;
+    
+    // Show results
+    elements.audienceResults.classList.remove('d-none');
+    elements.audienceResults.style.display = 'block';
+    
+    // Store data for export
+    window.lastAudienceData = data;
     
     // Scroll to results
-    elements.audienceResults.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+        elements.audienceResults.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
 }
 
 /**
@@ -462,10 +490,10 @@ function showErrorMessage(message) {
         `;
         errorContainer.classList.remove('d-none');
         
-        // Auto-hide after 5 seconds
+        // Auto-hide after 8 seconds
         setTimeout(() => {
             errorContainer.classList.add('d-none');
-        }, 5000);
+        }, 8000);
     } else {
         // Fallback to console and alert
         console.error(message);
@@ -477,20 +505,12 @@ function showErrorMessage(message) {
  * Export functionality
  */
 function exportResults(type, format) {
-    console.log(`📤 Exporting ${type} results as ${format}`);
-    
-    const resultsElement = type === 'trend' ? elements.trendResults : elements.audienceResults;
-    if (!resultsElement) return;
-    
-    // Extract text content from results
-    const sections = resultsElement.querySelectorAll('.insight-section');
-    const data = {};
-    
-    sections.forEach(section => {
-        const title = section.querySelector('h4')?.textContent?.replace(/^[^\w]*/, '') || 'Unknown';
-        const content = section.querySelector('.insight-content')?.textContent || '';
-        data[title] = content;
-    });
+    // Get stored data
+    const data = type === 'trend' ? window.lastTrendData : window.lastAudienceData;
+    if (!data) {
+        showErrorMessage('No data available for export. Please run an analysis first.');
+        return;
+    }
     
     if (format === 'json') {
         exportAsJSON(data, `${type}-analysis-${Date.now()}.json`);
@@ -505,11 +525,36 @@ function exportAsJSON(data, filename) {
 }
 
 function exportAsCSV(data, filename) {
-    const csv = Object.entries(data)
-        .map(([key, value]) => `"${key}","${value.replace(/"/g, '""')}"`)
-        .join('\n');
-    const csvString = 'Section,Content\n' + csv;
-    downloadFile(csvString, filename, 'text/csv');
+    // Convert complex data to CSV format
+    let csvContent = 'Type,Content\n';
+    
+    // Add summary
+    if (data.summary) {
+        csvContent += `"Summary","${data.summary.replace(/"/g, '""')}"\n`;
+    }
+    
+    // Add insights
+    if (data.insights && data.insights.length > 0) {
+        data.insights.forEach(insight => {
+            csvContent += `"Insight: ${insight.title}","${insight.description.replace(/"/g, '""')} (Confidence: ${Math.round(insight.confidence * 100)}%)"\n`;
+        });
+    }
+    
+    // Add cultural affinities (for audience data)
+    if (data.cultural_affinities && data.cultural_affinities.length > 0) {
+        data.cultural_affinities.forEach(affinity => {
+            csvContent += `"Cultural Affinity: ${affinity.title}","${affinity.description.replace(/"/g, '""')} (Confidence: ${Math.round(affinity.confidence * 100)}%)"\n`;
+        });
+    }
+    
+    // Add recommendations
+    if (data.recommendations && data.recommendations.length > 0) {
+        data.recommendations.forEach(rec => {
+            csvContent += `"Recommendation","${rec.replace(/"/g, '""')}"\n`;
+        });
+    }
+    
+    downloadFile(csvContent, filename, 'text/csv');
 }
 
 function downloadFile(content, filename, contentType) {
@@ -522,13 +567,10 @@ function downloadFile(content, filename, contentType) {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
-    console.log(`✅ Downloaded: ${filename}`);
 }
 
 /**
  * TAB SWITCHING AND HELPER TOOLS
- * Merged from tabs-fix.js for simplicity
  */
 
 /**
@@ -539,7 +581,7 @@ function initTabSwitching() {
     const tabContents = document.querySelectorAll('.tab-content');
     
     if (tabButtons.length === 0 || tabContents.length === 0) {
-        console.error('❌ Tab elements not found');
+        console.error('Tab elements not found');
         return;
     }
     
@@ -550,8 +592,6 @@ function initTabSwitching() {
             
             const targetTabId = this.getAttribute('data-tab');
             if (!targetTabId) return;
-            
-            console.log(`🔄 Switching to tab: ${targetTabId}`);
             
             // Remove active from all buttons
             tabButtons.forEach(btn => btn.classList.remove('active'));
@@ -573,8 +613,6 @@ function initTabSwitching() {
                     targetContent.classList.add('active');
                 }, 50);
             }
-            
-            console.log(`✅ Tab switched to: ${targetTabId}`);
         });
     });
     
@@ -597,19 +635,14 @@ function initTabSwitching() {
             });
         }
     }
-    
-    console.log('✅ Tab switching initialized!');
 }
 
 /**
  * Toggle advanced input options
  */
 function toggleAdvancedInputs(type) {
-    console.log(`🔧 Toggling advanced inputs for: ${type}`);
-    
     const container = document.querySelector(`#${type}Form .advanced-inputs`);
     if (!container) {
-        console.error(`❌ Advanced inputs container not found for: ${type}`);
         return;
     }
     
@@ -622,7 +655,6 @@ function toggleAdvancedInputs(type) {
         container.classList.add('show');
         icon.className = 'fas fa-chevron-up';
         button.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Advanced Options';
-        console.log('✅ Advanced options shown');
     } else {
         container.classList.remove('show');
         setTimeout(() => {
@@ -630,7 +662,6 @@ function toggleAdvancedInputs(type) {
         }, 300);
         icon.className = 'fas fa-cog';
         button.innerHTML = '<i class="fas fa-cog"></i> Advanced Options';
-        console.log('✅ Advanced options hidden');
     }
 }
 
@@ -755,7 +786,6 @@ function fillRandomTrend() {
     if (input) {
         input.value = randomTrend;
         input.focus();
-        console.log(`✨ Filled random trend: ${randomTrend}`);
     }
     document.querySelector('.helper-menu')?.remove();
 }
@@ -777,7 +807,6 @@ function fillRandomAudience() {
     if (input) {
         input.value = randomAudience;
         input.focus();
-        console.log(`✨ Filled random audience: ${randomAudience}`);
     }
     document.querySelector('.helper-menu')?.remove();
 }
@@ -794,14 +823,12 @@ function clearAllInputs() {
         result.classList.add('d-none');
     });
     
-    console.log('🧹 All inputs cleared');
     document.querySelector('.helper-menu')?.remove();
 }
 
 function openDeveloperDocs() {
     // Open the FastAPI docs in a new tab
     window.open('http://localhost:8000/docs', '_blank');
-    console.log('📖 Opening developer documentation');
     document.querySelector('.helper-menu')?.remove();
 }
 
@@ -809,11 +836,9 @@ function openDeveloperDocs() {
  * Check API status and update the indicator
  */
 async function checkApiStatus() {
-    console.log('🔍 Checking API status...');
     const statusElement = document.getElementById('apiStatus');
     
     if (!statusElement) {
-        console.error('❌ API status element not found');
         return;
     }
     
@@ -825,7 +850,10 @@ async function checkApiStatus() {
         indicator.className = 'status-indicator status-warning';
         text.textContent = 'Checking API status...';
         
-        const response = await fetch('http://localhost:8000/api/status');
+        const response = await fetch('http://localhost:8000/api/status', {
+            method: 'GET',
+            signal: AbortSignal.timeout(5000) // 5 second timeout
+        });
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -842,14 +870,17 @@ async function checkApiStatus() {
             text.textContent = '⚠️ Some services in demo mode';
         }
         
-        console.log('✅ API status check completed:', data);
-        
     } catch (error) {
-        console.error('❌ API status check failed:', error);
+        console.error('API status check failed:', error);
         indicator.className = 'status-indicator status-error';
-        text.textContent = '❌ Backend server not running';
+        text.textContent = '❌ Unable to connect to server';
     }
     
     // Close helper menu
     document.querySelector('.helper-menu')?.remove();
+}
+
+function saveInsight(type) {
+    console.log(`Saving ${type} insight...`);
+    // Placeholder for save functionality
 }

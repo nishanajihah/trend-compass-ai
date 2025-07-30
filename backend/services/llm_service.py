@@ -4,6 +4,7 @@ Enhanced Gemini AI service with real API integration and fallback responses
 
 import os
 import json
+import asyncio
 from pathlib import Path
 from dotenv import load_dotenv
 from typing import Dict, Any, Optional
@@ -18,6 +19,7 @@ try:
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
+    genai = None  # type: ignore
     print("⚠️ Google Generative AI not available, using fallback responses")
 
 class GeminiService:
@@ -27,11 +29,13 @@ class GeminiService:
         """Setup service with real API integration and fallback capability"""
         self.api_key = os.getenv("GEMINI_API_KEY")
         self.use_real_api = False
+        self.model = None
         
-        if self.api_key and self.api_key != "demo_key_for_hackathon" and GEMINI_AVAILABLE:
+        if self.api_key and self.api_key != "demo_key_for_hackathon" and GEMINI_AVAILABLE and genai is not None:
             try:
-                genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel('gemini-pro')
+                genai.configure(api_key=self.api_key)  # type: ignore
+                # Use the current model name for Gemini 1.5
+                self.model = genai.GenerativeModel('gemini-1.5-flash')  # type: ignore
                 self.use_real_api = True
                 print("🤖 Gemini AI service initialized with real API")
             except Exception as e:
@@ -41,10 +45,20 @@ class GeminiService:
             print("🤖 Using demo responses (add real GEMINI_API_KEY for live AI)")
     
     async def _call_real_gemini_api(self, prompt: str) -> Optional[str]:
-        """Call the real Gemini API with error handling"""
+        """Call the real Gemini API with error handling and timeout"""
+        if not self.use_real_api or self.model is None:
+            return None
+            
         try:
-            response = self.model.generate_content(prompt)
+            # Add timeout to prevent hanging
+            response = await asyncio.wait_for(
+                asyncio.to_thread(self.model.generate_content, prompt),
+                timeout=10.0  # 10 second timeout
+            )
             return response.text
+        except asyncio.TimeoutError:
+            print("Gemini API timeout after 10 seconds")
+            return None
         except Exception as e:
             print(f"Gemini API error: {e}")
             return None

@@ -1,11 +1,12 @@
 # Main requirements file for the Trend Compass backend
+# Updated for Python 3.13 compatibility
 # These packages are necessary for running the FastAPI application
 # and integrating with Gemini and Qloo APIs
 
-fastapi==0.110.0        # Modern, fast web framework for building APIs
-uvicorn==0.27.0         # ASGI server implementation for running FastAPI
-python-dotenv==1.0.1    # Loading environment variables from .env file
-httpx==0.27.0           # Fully featured HTTP client
-pydantic==2.6.0         # Data validation and settings management
-google-generativeai==0.3.0  # Google's Gemini API client
-python-multipart==0.0.9  # For handling form data and file uploads
+fastapi>=0.110.0        # Modern, fast web framework for building APIs
+uvicorn>=0.27.0         # ASGI server implementation for running FastAPI
+python-dotenv>=1.0.1    # Loading environment variables from .env file
+httpx>=0.27.0           # Fully featured HTTP client
+pydantic>=2.9.0         # Data validation and settings management (Python 3.13 compatible)
+google-generativeai>=0.8.0  # Google's Gemini API client (latest version)
+python-multipart>=0.0.9  # For handling form data and file uploads

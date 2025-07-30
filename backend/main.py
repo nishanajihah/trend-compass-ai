@@ -33,7 +33,6 @@ app = FastAPI(
     contact={
         "name": "Trend Compass Contact",
         "url": "https://github.com/nishanajihah/trend-compass-ai",
-        "email": "nishanajihah.dev@gmail.com"
     },
     license_info={
         "name": "MIT License",
