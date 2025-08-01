@@ -22,7 +22,7 @@ from middleware.rate_limiter import rate_limiter
 app = FastAPI(
     title="Trend Compass API",
     description="""
-    AI-Powered Trend Forecasting & Audience Insights
+    AI-Powered Trend Forecasting & Audience Analysis
     
     Combining Qloo's cultural affinity data with Gemini LLM for rich, strategic insights.
     This API provides endpoints for:

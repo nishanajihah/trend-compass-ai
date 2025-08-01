@@ -1,108 +1,122 @@
 # Trend Compass AI
 
-An AI-powered trend forecasting and audience insights tool built to showcase the combined power of Qloo's cultural affinity data and Gemini LLM.
+An AI-powered trend forecasting and audience insights tool that demonstrates the combined power of Qloo's cultural affinity data and Google's Gemini LLM.
 
 ![Trend Compass Screenshot](https://via.placeholder.com/800x400?text=Trend+Compass+Screenshot)
 
-## 🚀 Live Demo
+## 🚀 Live Demo & Video
 
-<!-- [Check out the live demo here](#) (Add your demo URL when deployed) -->
+- **Live Demo:** [https://your-project-url.com](https://your-project-url.com)
+- **Demo Video:** [https://youtube.com/your-video-link](https://youtube.com/your-video-link)
 
-## ✨ Features
+## ✨ Project Overview
 
-- **Trend Analysis**: Get forecasts and insights about emerging trends across industries
-- **Audience Insights**: Understand cultural affinities and preferences of different audience segments
-- **AI-Powered Recommendations**: Receive actionable recommendations for marketing and content creation
-- **Intuitive UI**: Clean, responsive interface for easy navigation and analysis
+**Trend Compass AI** is a cutting-edge application designed to help businesses and creators understand the world around them. By leveraging Qloo's unique cultural intelligence—the world's most advanced graph of consumer preferences—and the analytical power of an LLM, our platform delivers actionable trend analysis and audience insights with unprecedented depth and speed.
+
+**Key Features:**
+- **Trend Analysis**: Get forecasts and insights about emerging trends across industries.
+- **Audience Insights**: Understand the cultural affinities and preferences of different audience segments.
+- **AI-Powered Recommendations**: Receive actionable recommendations for marketing and content creation.
+- **Intuitive UI**: A clean, responsive interface built with Vite and TypeScript for a premium user experience.
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: HTML, CSS, JavaScript
+- **Frontend**: Vite + TypeScript, HTML, CSS (with responsive design and theming)
 - **Backend**: Python with FastAPI
 - **AI**: Google's Gemini API (LLM)
 - **Data**: Qloo Cultural Affinity API
+- **Deployment**: Render
 
-## 📋 Project Structure
+## 💡 Our Development Journey: Challenges & Learnings
 
-```
-trend-compass/
-├── backend/               # FastAPI backend
-│   ├── main.py           # Application entry point
-│   ├── requirements.txt  # Python dependencies
-│   ├── models/           # Data models
-│   │   └── schemas.py
-│   ├── services/         # Business logic
-│   │   ├── llm_service.py
-│   │   └── qloo_service.py
-│   └── routers/          # API endpoints
-│       └── trends.py
-├── frontend/             # Simple HTML/CSS/JS frontend
-│   ├── index.html       # Main page
-│   ├── css/
-│   │   └── styles.css
-│   └── js/
-│       └── app.js
-├── .env.example         # Example environment variables
-└── README.md            # Project documentation
-```
+Building Trend Compass for this hackathon was a challenging but rewarding process, especially as a new developer to this specific tech stack. We encountered several key challenges that shaped our final product:
 
-## 🔧 Setup & Installation
+1.  **The Deployment Maze**: We initially struggled to deploy our Python backend. We tried deploying the static frontend to platforms like Netlify and the backend separately, which resulted in numerous errors and a lot of debugging time. We quickly realized that our full-stack Python application required a different kind of hosting. This led us to switch to **Render**, which was a fantastic discovery, offering seamless support for Python web services like FastAPI.
+2.  **Frontend Workflow**: Our initial static HTML, CSS, and JS frontend worked well locally, but it wasn't scalable or easy to deploy. The decision to switch to **Vite with TypeScript** was a game-changer. It streamlined our development process with hot reloading and provided a more robust, modern foundation for our UI, which ultimately led to the polished, responsive interface you see today.
+3.  **API Integration**: Learning to connect two new and powerful APIs—**FastAPI** for our backend, and then integrating both the **Qloo and Gemini APIs**—presented a steep learning curve. The process wasn't easy, but through perseverance, we built a robust backend that successfully orchestrates data from both services to create the valuable reports you'll see in the demo.
+
+This journey taught us the importance of choosing the right tools for the job and the value of a flexible, problem-solving mindset.
+
+## 🔧 Getting Started (For Local Development)
 
 ### Prerequisites
 
 - Python 3.9+
 - Gemini API key
 - Qloo API key
+- Node.js & npm
 
 ### Installation
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/trend-compass.git
-   cd trend-compass
-   ```
+1.  Clone the repository and navigate into the folder:
+    ```bash
+    git clone [https://github.com/yourusername/trend-compass.git](https://github.com/yourusername/trend-compass.git)
+    cd trend-compass
+    ```
 
-2. Set up the backend:
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   ```
+2.  Set up the backend:
+    ```bash
+    # Create and activate a Python virtual environment
+    python -m venv venv
+    .\venv\Scripts\activate
+    
+    # Install Python dependencies
+    pip install -r backend/requirements.txt
+    ```
 
-3. Create a `.env` file in the root directory:
-   ```
-   GEMINI_API_KEY=your_gemini_api_key_here
-   QLOO_API_KEY=your_qloo_api_key_here
-   ```
+3.  Set up the frontend:
+    ```bash
+    # Navigate to the frontend directory
+    cd frontend/
+    
+    # Install Node.js dependencies
+    npm install
+    ```
 
-4. Start the backend server:
-   ```bash
-   cd backend
-   uvicorn main:app --reload
-   ```
+4.  Create a `.env` file in the **backend directory** (`trend-compass/backend/.env`):
+    ```
+    GEMINI_API_KEY=your_gemini_api_key_here
+    QLOO_API_KEY=your_qloo_api_key_here
+    ```
 
-5. Open the frontend:
-   - Open `frontend/index.html` in your browser, or
-   - Use a simple HTTP server: `python -m http.server -d frontend`
+5.  Start the backend server:
+    ```bash
+    # From the backend directory
+    uvicorn main:app --reload
+    ```
 
-## 💡 Usage
+6.  Start the frontend development server:
+    ```bash
+    # From the frontend directory
+    npm run dev
+    ```
 
-1. **Analyze a Trend**:
-   - Enter a trend or topic in the "Trend Analysis" tab
-   - Optionally specify industry and timeframe
-   - Click "Analyze Trend" to get insights
+## 📋 Project Structure
 
-2. **Get Audience Insights**:
-   - Describe your target audience in the "Audience Insights" tab
-   - Optionally specify product category and region
-   - Click "Get Insights" to receive analysis
+```
+trend-compass/
+├── frontend/              # Vite + TypeScript Frontend
+│   ├── src/               # Source code
+│   │   └── ...
+│   ├── public/            # Static assets
+│   ├── package.json       # Frontend dependencies
+│   └── ...
+├── backend/               # Python FastAPI Backend
+│   ├── main.py            # API entry point
+│   ├── requirements.txt   # Python dependencies
+│   └── ...
+├── .gitignore             # Files to ignore from Git
+└── README.md              # Project documentation
+
+```
 
 ## 🧪 API Documentation
 
-When running the backend, you can access the FastAPI interactive documentation at `http://localhost:8000/docs`. This provides a convenient way to test all API endpoints directly.
+When the backend is running locally, you can access the interactive API documentation (Swagger UI) at `http://localhost:8000/docs`.
 
 ## 🤝 Contributing
 
-This is a hackathon project, but contributions and suggestions are welcome! Please open an issue or submit a pull request.
+This is a hackathon project, but suggestions for improvements are always welcome!
 
 ## 📄 License
 
@@ -110,6 +124,6 @@ This is a hackathon project, but contributions and suggestions are welcome! Plea
 
 ## 📬 Contact
 
-Your Name - [your.email@example.com](mailto:your.email@example.com)
+[Nisha Najihah](https://github.com/nishanajihah) - nishanajihah.dev@gmail.com
 
-Project Link: [https://github.com/yourusername/trend-compass](https://github.com/yourusername/trend-compass)
+Project Link: [https://github.com/nishanajihah/trend-compass-ai](https://github.com/nishanajihah/trend-compass-ai)
