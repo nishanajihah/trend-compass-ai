@@ -42,36 +42,95 @@ class QlooService:
         else:
             print("🚀 Qloo service in demo mode (add real QLOO_API_KEY for live data)")
     
+    async def test_connection(self) -> Dict[str, Any]:
+        """Test connection to Qloo API to find working endpoints"""
+        if not self.api_key or self.api_key == "demo_key_for_hackathon":
+            return {
+                "status": "demo_mode",
+                "message": "No real API key configured",
+                "available_endpoints": []
+            }
+        
+        test_endpoints = [
+            f"{self.base_url}/",
+            f"{self.base_url}/health",
+            f"{self.base_url}/v1/",
+            f"{self.base_url}/api/",
+            f"{self.base_url}/docs",
+            f"{self.base_url}/trends",
+            f"{self.base_url}/cultural"
+        ]
+        
+        working_endpoints = []
+        
+        for endpoint in test_endpoints:
+            try:
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(
+                        endpoint,
+                        headers=self.headers,
+                        timeout=10.0
+                    )
+                    
+                    if response.status_code < 500:  # Accept any non-server error
+                        working_endpoints.append({
+                            "endpoint": endpoint,
+                            "status_code": response.status_code,
+                            "response_preview": response.text[:200] if response.text else ""
+                        })
+                        
+            except Exception as e:
+                continue
+        
+        return {
+            "status": "tested",
+            "base_url": self.base_url,
+            "working_endpoints": working_endpoints
+        }
+
     async def get_trend_data(self, query: str, industry: Optional[str] = None) -> Dict[str, Any]:
         """Get trend data from Qloo API"""
         try:
-            # Call the actual Qloo API
-            endpoint = f"{self.base_url}/trends/analyze"
+            # Try different possible endpoints for Qloo API
+            possible_endpoints = [
+                f"{self.base_url}/trends/analyze",
+                f"{self.base_url}/v1/trends/analyze", 
+                f"{self.base_url}/analyze/trends",
+                f"{self.base_url}/api/trends",
+                f"{self.base_url}/cultural/trends"
+            ]
             
             # Prepare the request data
             request_data = {"query": query}
             if industry:
                 request_data["industry"] = industry
-                
-            # Make the API call
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    endpoint,
-                    headers=self.headers,
-                    json=request_data,
-                    timeout=30.0
-                )
-                
-                # Log the request for debugging
-                print(f"Qloo API request to {endpoint}: {request_data}")
-                
-                # Process the response
-                if response.status_code == 200:
-                    return response.json()
-                else:
-                    print(f"Qloo API error: {response.status_code} - {response.text}")
-                    # Fall back to simulated data if API call fails
-                    return self._get_simulated_trend_data(query)
+            
+            # Try each endpoint until one works
+            for endpoint in possible_endpoints:
+                try:
+                    async with httpx.AsyncClient() as client:
+                        response = await client.post(
+                            endpoint,
+                            headers=self.headers,
+                            json=request_data,
+                            timeout=30.0
+                        )
+                        
+                        print(f"Qloo API request to {endpoint}: {request_data}")
+                        
+                        if response.status_code == 200:
+                            print(f"✅ Qloo API success on endpoint: {endpoint}")
+                            return response.json()
+                        else:
+                            print(f"❌ Qloo API error on {endpoint}: {response.status_code} - {response.text}")
+                            
+                except Exception as endpoint_error:
+                    print(f"❌ Error trying endpoint {endpoint}: {str(endpoint_error)}")
+                    continue
+            
+            # If all endpoints failed, fall back to simulated data
+            print("⚠️ All Qloo endpoints failed, using simulated data")
+            return self._get_simulated_trend_data(query)
                     
         except Exception as e:
             # Log the error and fall back to simulated data

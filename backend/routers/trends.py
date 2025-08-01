@@ -35,6 +35,31 @@ def get_qloo_service():
     return QlooService()
 
 @router.get(
+    "/test-qloo",
+    summary="🧪 Test Qloo API Connection",
+    description="Test connection to Qloo API and discover available endpoints",
+    responses={
+        200: {"description": "✅ Qloo API test results"},
+        500: {"description": "⚠️ Server Error"}
+    }
+)
+async def test_qloo_connection(qloo_service: QlooService = Depends(get_qloo_service)):
+    """Test Qloo API connection and discover endpoints."""
+    try:
+        connection_test = await qloo_service.test_connection()
+        return {
+            "status": "test_completed",
+            "timestamp": datetime.now().isoformat(),
+            "qloo_connection": connection_test
+        }
+    except Exception as e:
+        return {
+            "status": "test_failed",
+            "timestamp": datetime.now().isoformat(),
+            "error": str(e)
+        }
+
+@router.get(
     "/status",
     summary="🔌 API Status Check",
     description="Check the status of all external API integrations and services",
