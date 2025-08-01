@@ -87,38 +87,46 @@ app.include_router(trends.router)
 dist_path = Path(__file__).parent.parent / "dist"
 if dist_path.exists():
     app.mount("/assets", StaticFiles(directory=str(dist_path / "assets")), name="assets")
-    
+
+    # Catch-all route to serve frontend (must be last)
     @app.get("/{path:path}")
     async def serve_frontend(path: str):
         """Serve the frontend for all non-API routes"""
-        # Skip API routes
-        if path.startswith("api/") or path.startswith("docs") or path.startswith("redoc"):
+        
+        # Skip API routes, docs, and health checks
+        if (path.startswith("api/") or 
+            path.startswith("docs") or 
+            path.startswith("redoc") or 
+            path.startswith("openapi.json") or
+            path == "health"):
             return JSONResponse(status_code=404, content={"error": "Not found"})
         
-        # Serve index.html for SPA routing
+        # Serve index.html for all other routes (SPA routing)
         index_file = dist_path / "index.html"
         if index_file.exists():
             return FileResponse(str(index_file))
         else:
-            return JSONResponse(status_code=404, content={"error": "Frontend not built"})
+            return JSONResponse(status_code=404, content={"error": "Frontend not built. Run 'npm run build' first."})
 
-# Health check endpoint
-@app.get("/", tags=["Health"])
-async def root():
-    """Root endpoint with API status and welcome message."""
-    return {
-        "message": "🔮 Welcome to Trend Compass API",
-        "description": "AI-Powered Trend Forecasting & Audience Insights",
-        "status": "active",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "endpoints": {
-            "trend_analysis": "/trends/analyze",
-            "audience_insights": "/trends/audience"
+else:
+    # If dist folder doesn't exist, show helpful message at root
+    @app.get("/", tags=["Health"])
+    async def root_no_frontend():
+        """Root endpoint when frontend is not built."""
+        return {
+            "message": "🔮 Trend Compass API",
+            "description": "AI-Powered Trend Forecasting & Audience Insights",
+            "status": "active - frontend not built",
+            "version": "1.0.0",
+            "docs": "/docs",
+            "note": "Run 'npm run build' to build the frontend",
+            "endpoints": {
+                "trend_analysis": "/api/trends/analyze",
+                "audience_insights": "/api/audience/analyze"
+            }
         }
-    }
 
-# Health check endpoint for monitoring
+# Health check endpoints (available regardless of frontend build status)
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Health check endpoint for service monitoring."""
@@ -126,6 +134,22 @@ async def health_check():
         "status": "healthy",
         "service": "trend-compass-api",
         "version": "1.0.0"
+    }
+
+# API info endpoint
+@app.get("/api", tags=["Health"])
+async def api_info():
+    """API information endpoint."""
+    return {
+        "message": "🔮 Trend Compass API",
+        "description": "AI-Powered Trend Forecasting & Audience Insights",
+        "status": "active",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "endpoints": {
+            "trend_analysis": "/api/trends/analyze",
+            "audience_insights": "/api/audience/analyze"
+        }
     }
 
 # Development endpoint to reset rate limits

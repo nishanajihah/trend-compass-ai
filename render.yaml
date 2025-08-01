@@ -1,25 +1,13 @@
 services:
-  # Backend API
+  # Full-stack deployment (Backend serves Frontend + API)
   - type: web
-    name: trend-compass-api
+    name: trend-compass-ai
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && npm ci && npm run build
     startCommand: python wsgi_runner.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
-
-  # Frontend Static Site
-  - type: web
-    name: trend-compass-frontend
-    runtime: static
-    buildCommand: npm ci && npm run build
-    staticPublishPath: ./dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
       - key: NODE_VERSION
         value: 18
