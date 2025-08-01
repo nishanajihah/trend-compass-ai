@@ -14,29 +14,15 @@ const API_BASE_URL = (() => {
         window.location.port === '5173') { // Vite default port
         return 'http://localhost:8000';
     }
-    // For production deployment - update this with your deployed backend URL
-    if (window.location.href.includes('vercel.app') || window.location.hostname.includes('.com')) {
-        // TODO: Replace with your actual backend URL once deployed
-        // Example: 'https://your-app-name.railway.app' or 'https://your-app.onrender.com'
-        return 'https://your-backend-url-here.railway.app'; // Update this!
-    }
-    // Fallback to local development
-    return 'http://localhost:8000';
+    // For production deployment on Render or other platforms
+    // When deployed on Render, use same domain (backend serves API and frontend)
+    return window.location.origin;
 })();
 
 // Types
-interface AnalysisRequest {
-    topic: string;
-}
-
 interface AnalysisResponse {
     trend_analysis: string;
     audience_insights: string;
-}
-
-interface ApiStatus {
-    status: string;
-    message?: string;
 }
 
 // DOM Elements
@@ -181,11 +167,8 @@ function formatAnalysisText(text: string): string {
     return text
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/
-
-/g, '</p><p>')
-        .replace(/
-/g, '<br>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>')
         .replace(/^/, '<p>')
         .replace(/$/, '</p>');
 }
@@ -327,18 +310,14 @@ function saveResults(type: 'trend' | 'audience'): void {
  * Show about modal (placeholder)
  */
 function showAbout(): void {
-    alert('Trend Compass - AI-Powered Trend Forecasting
-
-Combining Qloo's cultural affinity data with Gemini LLM for rich, strategic insights.');
+    alert('Trend Compass - AI-Powered Trend Forecasting\n\nCombining Qloo\'s cultural affinity data with Gemini LLM for rich, strategic insights.');
 }
 
 /**
  * Show privacy modal (placeholder)
  */
 function showPrivacy(): void {
-    alert('Privacy Policy
-
-Your data is processed securely and not stored permanently. Analysis requests are sent to our API for processing only.');
+    alert('Privacy Policy\n\nYour data is processed securely and not stored permanently. Analysis requests are sent to our API for processing only.');
 }
 
 // Make functions available globally for HTML onclick handlers
