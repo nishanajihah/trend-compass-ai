@@ -361,163 +361,6 @@ async function handleAudienceSubmission(e: Event): Promise<void> {
 }
 
 /**
- * Analyze trend - main analysis function
- */
-async function analyzeTrend(topic: string): Promise<void> {
-    console.log(`🔍 Analyzing trend: ${topic}`);
-    
-    showTrendLoading();
-    hideTrendError();
-    hideTrendResults();
-    
-    try {
-        // Get advanced options
-        const industry = (elements.trendIndustry as HTMLSelectElement)?.value || '';
-        const timeframe = (elements.trendTimeframe as HTMLSelectElement)?.value || '1year';
-        
-        const response = await fetch(`${API_BASE_URL}/api/trends/analyze`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                topic,
-                industry: industry || undefined,
-                timeframe 
-            })
-        });
-        
-        if (!response.ok) {
-            if (response.status === 429) {
-                throw new Error('Rate limit exceeded. You have reached the daily limit of 15 requests. Please try again tomorrow.');
-            } else if (response.status === 500) {
-                throw new Error('Server error. Please try again later.');
-            } else {
-                throw new Error(`Analysis failed: ${response.statusText}`);
-            }
-        }
-        
-        const result = await response.json();
-        
-        // Update rate limit display from response headers
-        const rateLimit = response.headers.get('X-RateLimit-Limit');
-        const rateLimitRemaining = response.headers.get('X-RateLimit-Remaining');
-        
-        if (rateLimit && rateLimitRemaining) {
-            updateRateLimitDisplay(rateLimitRemaining, rateLimit);
-        }
-        
-        // Hide loading before displaying results
-        hideTrendLoading();
-        
-        // Display results
-        displayTrendResults(result.trend_analysis || result.analysis);
-        
-    } catch (error) {
-        console.error('Trend analysis failed:', error);
-        
-        // Make sure loading is hidden on error
-        hideTrendLoading();
-        
-        let errorMessage = 'Failed to analyze trend. ';
-        if (error instanceof Error) {
-            if (error.name === 'AbortError') {
-                errorMessage = 'Request timed out. AI analysis takes time - please try again.';
-            } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('fetch')) {
-                errorMessage = '🔌 Cannot connect to server. This could be due to:\n\n• Rate limit exceeded (15 requests per day)\n• Server is temporarily down\n• Network connectivity issues\n\nPlease try again later or reset your daily quota.';
-            } else if (error.message.includes('500')) {
-                errorMessage = '⚠️ Server error occurred. Our team has been notified. Please try again in a few minutes.';
-            } else if (error.message.includes('429')) {
-                errorMessage = '⚠️ DAILY LIMIT REACHED (15 requests per day)\n\nYou have used all your daily requests. Please wait until tomorrow to try again, or contact support to reset your quota.';
-            } else {
-                errorMessage += error.message;
-            }
-        }
-        
-        showValidationMessage('trendValidation', errorMessage, 'error');
-    } finally {
-        // Re-enable submit button
-        const btn = document.getElementById('trendAnalyzeBtn') as HTMLButtonElement;
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-search"></i> Analyze Trend';
-        }
-    }
-}
-
-/**
- * Analyze audience
- */
-async function analyzeAudience(description: string): Promise<void> {
-    console.log(`👥 Analyzing audience: ${description}`);
-    
-    showAudienceLoading();
-    hideAudienceError();
-    hideAudienceResults();
-    
-    try {
-        // Get advanced options
-        const category = (elements.audienceCategory as HTMLSelectElement)?.value || '';
-        const region = (elements.audienceRegion as HTMLSelectElement)?.value || '';
-        
-        const response = await fetch(`${API_BASE_URL}/api/trends/audience`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                description,
-                category: category || undefined,
-                region: region || undefined
-            })
-        });
-        
-        if (!response.ok) {
-            if (response.status === 429) {
-                throw new Error('Rate limit exceeded. You have reached the daily limit of 15 requests. Please try again tomorrow.');
-            } else if (response.status === 500) {
-                throw new Error('Server error. Please try again later.');
-            } else {
-                throw new Error(`Analysis failed: ${response.statusText}`);
-            }
-        }
-        
-        const data = await response.json();
-        
-        // Display results
-        displayAudienceResults(data.audience_insights || data.analysis);
-        
-    } catch (error) {
-        console.error('Audience analysis error:', error);
-        
-        // Make sure loading is hidden on error
-        hideAudienceLoading();
-        
-        let errorMessage = 'Failed to analyze audience. ';
-        if (error instanceof Error) {
-            if (error.name === 'AbortError') {
-                errorMessage = 'Request timed out. AI analysis takes time - please try again.';
-            } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('fetch')) {
-                errorMessage = '🔌 Server is currently down or unreachable. Please try again later or contact support.';
-            } else if (error.message.includes('500')) {
-                errorMessage = '⚠️ Server error occurred. Our team has been notified. Please try again in a few minutes.';
-            } else {
-                errorMessage += error.message;
-            }
-        }
-        
-        showValidationMessage('audienceValidation', errorMessage, 'error');
-    } finally {
-        // Re-enable submit button
-        const btn = document.getElementById('audienceAnalyzeBtn') as HTMLButtonElement;
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-users"></i> Analyze Audience';
-        }
-    }
-}
-
-/**
  * Display trend analysis results
  */
 function displayTrendResults(analysis: any): void {
@@ -805,39 +648,40 @@ function initializeCharacterCounters(): void {
     // Trend query counter
     if (elements.trendQuery && elements.trendCharCount) {
         elements.trendQuery.addEventListener('input', function() {
-            const count = (this as HTMLInputElement).value.length;
-            if (elements.trendCharCount) {
-                elements.trendCharCount.textContent = count.toString();
-                
-                // Color coding for character count (matching original app.js)
-                if (count > 180) {
-                    elements.trendCharCount.style.color = '#ef4444'; // Red
-                } else if (count > 160) {
-                    elements.trendCharCount.style.color = '#f59e0b'; // Orange
-                } else {
-                    elements.trendCharCount.style.color = '#6b7280'; // Gray
-                }
-            }
+            updateCharacterCount('trendQuery', 'trendCharCount', 200);
         });
     }
     
     // Audience description counter
     if (elements.audienceDescription && elements.audienceCharCount) {
         elements.audienceDescription.addEventListener('input', function() {
-            const count = (this as HTMLTextAreaElement).value.length;
-            if (elements.audienceCharCount) {
-                elements.audienceCharCount.textContent = count.toString();
-                
-                // Color coding for character count (matching original app.js)
-                if (count > 450) {
-                    elements.audienceCharCount.style.color = '#ef4444'; // Red
-                } else if (count > 400) {
-                    elements.audienceCharCount.style.color = '#f59e0b'; // Orange
-                } else {
-                    elements.audienceCharCount.style.color = '#6b7280'; // Gray
-                }
-            }
+            updateCharacterCount('audienceDescription', 'audienceCharCount', 300);
         });
+    }
+}
+
+/**
+ * Update character count for an input field
+ */
+function updateCharacterCount(inputId: string, countId: string, maxLength: number): void {
+    const input = document.getElementById(inputId) as HTMLInputElement | HTMLTextAreaElement;
+    const counter = document.getElementById(countId);
+    
+    if (input && counter) {
+        const count = input.value.length;
+        counter.textContent = count.toString();
+        
+        // Color coding for character count
+        const warningThreshold = maxLength * 0.8; // 80% warning
+        const dangerThreshold = maxLength * 0.9;  // 90% danger
+        
+        if (count > dangerThreshold) {
+            counter.style.color = '#ef4444'; // Red
+        } else if (count > warningThreshold) {
+            counter.style.color = '#f59e0b'; // Orange
+        } else {
+            counter.style.color = '#6b7280'; // Gray
+        }
     }
 }
 
@@ -1072,10 +916,6 @@ function hideTrendResults(): void {
     elements.trendResults?.classList.add('d-none');
 }
 
-function hideTrendError(): void {
-    hideValidation('trendValidation');
-}
-
 /**
  * Show/hide functions for audience analysis
  */
@@ -1104,10 +944,6 @@ function showAudienceResults(): void {
 
 function hideAudienceResults(): void {
     elements.audienceResults?.classList.add('d-none');
-}
-
-function hideAudienceError(): void {
-    hideValidation('audienceValidation');
 }
 
 function showServerBanner(): void {
