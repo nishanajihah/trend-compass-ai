@@ -72,6 +72,7 @@ function initializeApp(): void {
     initTabSwitching();
     initializeCharacterCounters();
     initializeValidation();
+    initializeFooter(); // Initialize footer with current year
     
     // Auto-check API status on load with better session management
     const hasCheckedThisSession = sessionStorage.getItem('apiChecked');
@@ -1314,6 +1315,25 @@ function saveResults(type: 'trend' | 'audience'): void {
 }
 
 /**
+ * Initialize footer with dynamic year
+ */
+function initializeFooter(): void {
+    const currentYearElement = document.getElementById('currentYear');
+    if (currentYearElement) {
+        currentYearElement.textContent = new Date().getFullYear().toString();
+    }
+}
+
+/**
+ * Open API Documentation
+ */
+function openAPIDocs(): void {
+    const docsUrl = `${API_BASE_URL}/docs`;
+    console.log('📖 Opening API docs at:', docsUrl);
+    window.open(docsUrl, '_blank');
+}
+
+/**
  * Show about modal (placeholder)
  */
 function showAbout(): void {
@@ -1337,6 +1357,7 @@ declare global {
         checkAPIStatus: (showLoading?: boolean) => Promise<void>;
         showAbout: () => void;
         showPrivacy: () => void;
+        openAPIDocs: () => void;
         toggleAdvancedOptions: (type: 'trend' | 'audience') => void;
         showSampleInputs: () => void;
         fillRandomTrend: () => void;
@@ -1354,6 +1375,7 @@ window.saveResults = saveResults;
 window.checkAPIStatus = checkAPIStatus;
 window.showAbout = showAbout;
 window.showPrivacy = showPrivacy;
+window.openAPIDocs = openAPIDocs;
 window.toggleAdvancedOptions = toggleAdvancedOptions;
 window.showSampleInputs = showSampleInputs;
 window.fillRandomTrend = fillRandomTrend;
