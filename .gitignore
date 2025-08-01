@@ -19,7 +19,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
-dist/
+# NOTE: dist/ is NOT ignored because we commit frontend build files
 develop-eggs/
 lib/
 lib64/
@@ -55,7 +55,7 @@ requirements.txt # Add this only if you want to regenerate it locally and not tr
 # Node dependencies
 node_modules/
 # Build output directories
-dist/
+# NOTE: dist/ is committed to repo so Render can serve pre-built frontend
 dist-ssr/
 # Log files
 logs/

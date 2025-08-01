@@ -4,10 +4,8 @@ services:
     name: trend-compass-ai
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt && npm ci && npm run build
+    buildCommand: pip install -r requirements.txt
     startCommand: python wsgi_runner.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
-      - key: NODE_VERSION
-        value: 18

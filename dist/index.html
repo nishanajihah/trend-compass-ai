@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trend Compass - AI-Powered Trend Forecasting</title>
+    
+    <!-- Enhanced Stylesheets with New Theme -->
+    
+    <!-- External Resources -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    
+    <!-- SEO and Performance -->
+    <meta name="description" content="Next-generation AI-powered trend forecasting and cultural insights platform combining Qloo's data with Gemini LLM." />
+    <meta name="keywords" content="trend forecasting, AI insights, cultural data, audience analysis" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
+  <script type="module" crossorigin src="/assets/index-DSDG9qvS.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-B2YHa5X-.css">
+</head>
+<body>
+    <!-- Main Application Container -->
+    <div class="container">
+        <!-- Enhanced Header with API Status -->
+        <header class="header">
+            <h1 class="gradient-text">Trend Compass</h1>
+            <p class="subtitle">Next-Gen AI-Powered Trend Forecasting & Cultural Insights</p>
+            
+            <!-- API Status Indicator -->
+            <div id="apiStatus" class="api-status">
+                <span class="status-indicator status-warning"></span>
+                <span>Checking API status...</span>
+            </div>
+            
+            <!-- Server Status Banner (hidden by default) -->
+            <div id="serverStatusBanner" class="server-status-banner d-none">
+                <div class="banner-content">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Server connection issue detected. This could be due to the server being down or rate limits exceeded (15 requests per day).</span>
+                    <button onclick="checkAPIStatus()" class="btn-retry">
+                        <i class="fas fa-sync-alt"></i> Retry Connection
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs">
+                <button class="tab-button active" data-tab="trendAnalysisTab">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Trend Analysis</span>
+                </button>
+                <button class="tab-button" data-tab="audienceAnalysisTab">
+                    <i class="fas fa-users"></i>
+                    <span>Audience Analysis</span>
+                </button>
+                <button class="helper-btn" onclick="showSampleInputs()">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Sample Inputs</span>
+                </button>
+            </nav>
+
+            <!-- Tab Content: Trend Analysis -->
+            <section id="trendAnalysisTab" class="tab-content active">
+                <div class="analysis-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> Trend Analysis</h2>
+                        <p>Discover emerging trends and forecast their cultural impact</p>
+                    </div>
+                    
+                    <form id="trendForm" class="trend-form">
+                        <div class="input-group">
+                            <label for="trendQuery">Enter a trend, topic, or keyword:</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="text" 
+                                    id="trendQuery" 
+                                    placeholder="e.g., sustainable fashion, AI art, minimalist lifestyle..."
+                                    maxlength="200"
+                                    required
+                                />
+                                <button type="submit" id="trendAnalyzeBtn" class="btn-primary">
+                                    <i class="fas fa-chart-line"></i> Analyze Trends
+                                </button>
+                            </div>
+                            <div class="character-count">
+                                <span id="trendCharCount">0</span>/200 characters
+                            </div>
+                            <small class="input-hint">
+                                💡 Try: "plant-based meat", "remote work culture", "NFT art"
+                            </small>
+                        </div>
+
+                        <!-- Advanced Options -->
+                        <div class="text-center" style="margin-top: 15px;">
+                            <button type="button" class="btn-link" onclick="toggleAdvancedOptions('trend')">
+                                <i class="fas fa-cog"></i> Advanced Options
+                            </button>
+                        </div>
+                        
+                        <div class="advanced-inputs" id="trendAdvanced" style="display: none;">
+                            <div class="input-group">
+                                <label for="trendIndustry">Industry Focus (Optional):</label>
+                                <select id="trendIndustry">
+                                    <option value="">Any Industry</option>
+                                    <option value="fashion">Fashion & Beauty</option>
+                                    <option value="technology">Technology</option>
+                                    <option value="food">Food & Beverage</option>
+                                    <option value="entertainment">Entertainment</option>
+                                    <option value="wellness">Health & Wellness</option>
+                                    <option value="automotive">Automotive</option>
+                                    <option value="travel">Travel & Tourism</option>
+                                    <option value="finance">Finance & Fintech</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="trendTimeframe">Forecast Timeframe:</label>
+                                <select id="trendTimeframe">
+                                    <option value="6months">Next 6 months</option>
+                                    <option value="1year" selected>Next year</option>
+                                    <option value="2years">Next 2 years</option>
+                                    <option value="5years">Next 5 years</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Loading State -->
+                    <div id="trendLoading" class="loading-state d-none">
+                        <div class="loading-spinner"></div>
+                        <p>Analyzing trend patterns and forecasting cultural impact...</p>
+                        <small>This may take 10-30 seconds</small>
+                    </div>
+
+                    <!-- Results Container -->
+                    <div id="trendResults" class="results-container d-none">
+                        <div class="result-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-trending-up"></i> Trend Analysis Results</h3>
+                                <div class="export-controls">
+                                    <button onclick="exportResults('trend')" class="btn-export" title="Export Analysis">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button onclick="saveResults('trend')" class="btn-save" title="Save to Favorites">
+                                        <i class="fas fa-bookmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="trendResultsContent" class="card-content"></div>
+                        </div>
+                    </div>
+
+                    <!-- Validation Messages -->
+                    <div id="trendValidation" class="validation-message"></div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Audience Analysis -->
+            <section id="audienceAnalysisTab" class="tab-content">
+                <div class="analysis-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-users"></i> Audience Analysis</h2>
+                        <p>Understand your target audience and their cultural preferences</p>
+                    </div>
+                    
+                    <form id="audienceForm" class="trend-form">
+                        <div class="input-group">
+                            <label for="audienceDescription">Describe your target audience:</label>
+                            <div class="input-wrapper">
+                                <textarea 
+                                    id="audienceDescription" 
+                                    placeholder="e.g., Gen Z eco-conscious consumers, tech-savvy millennials, luxury fashion enthusiasts..."
+                                    maxlength="300"
+                                    rows="3"
+                                    style="flex: 1; resize: vertical; min-height: 80px;"
+                                    required
+                                ></textarea>
+                                <button type="submit" id="audienceAnalyzeBtn" class="btn-primary">
+                                    <i class="fas fa-users"></i> Analyze Audience
+                                </button>
+                            </div>
+                            <div class="character-count">
+                                <span id="audienceCharCount">0</span>/300 characters
+                            </div>
+                            <small class="input-hint">
+                                💡 Be specific: include demographics, interests, behaviors, or values
+                            </small>
+                        </div>
+
+                        <!-- Advanced Options -->
+                        <div class="text-center" style="margin-top: 15px;">
+                            <button type="button" class="btn-link" onclick="toggleAdvancedOptions('audience')">
+                                <i class="fas fa-cog"></i> Advanced Options
+                            </button>
+                        </div>
+                        
+                        <div class="advanced-inputs" id="audienceAdvanced" style="display: none;">
+                            <div class="input-group">
+                                <label for="audienceCategory">Primary Category:</label>
+                                <select id="audienceCategory">
+                                    <option value="">Any Category</option>
+                                    <option value="demographics">Demographics</option>
+                                    <option value="psychographics">Psychographics</option>
+                                    <option value="interests">Interests & Hobbies</option>
+                                    <option value="lifestyle">Lifestyle</option>
+                                    <option value="behavior">Consumer Behavior</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="audienceRegion">Geographic Focus:</label>
+                                <select id="audienceRegion">
+                                    <option value="">Global</option>
+                                    <option value="north-america">North America</option>
+                                    <option value="europe">Europe</option>
+                                    <option value="asia-pacific">Asia-Pacific</option>
+                                    <option value="latin-america">Latin America</option>
+                                    <option value="middle-east-africa">Middle East & Africa</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Loading State -->
+                    <div id="audienceLoading" class="loading-state d-none">
+                        <div class="loading-spinner"></div>
+                        <p>Analyzing audience preferences and cultural insights...</p>
+                        <small>This may take 10-30 seconds</small>
+                    </div>
+
+                    <!-- Results Container -->
+                    <div id="audienceResults" class="results-container d-none">
+                        <div class="result-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-users"></i> Audience Analysis</h3>
+                                <div class="export-controls">
+                                    <button onclick="exportResults('audience')" class="btn-export" title="Export Insights">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button onclick="saveResults('audience')" class="btn-save" title="Save to Favorites">
+                                        <i class="fas fa-bookmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="audienceResultsContent" class="card-content"></div>
+                        </div>
+                    </div>
+
+                    <!-- Validation Messages -->
+                    <div id="audienceValidation" class="validation-message"></div>
+                </div>
+            </section>
+
+            <!-- Rate Limit Display -->
+            <div id="rateLimitDisplay" class="rate-limit-box d-none">
+                <i class="fas fa-clock"></i>
+                <span id="rateLimitText">API Usage: 0/15 requests today</span>
+            </div>
+
+            <!-- Test Controls (Development Only) -->
+            <div id="testControls" class="test-controls" style="display: none;">
+                <button onclick="testConnection()" class="btn-test">
+                    <i class="fas fa-wifi"></i> Test Connection
+                </button>
+                <button onclick="clearCache()" class="btn-test">
+                    <i class="fas fa-trash"></i> Clear Cache
+                </button>
+            </div>
+
+            <!-- Error Display (Global) -->
+            <div id="errorDisplay" class="error-display d-none">
+                <div class="error-content">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h4>Analysis Error</h4>
+                    <p id="errorMessage">Something went wrong. Please try again.</p>
+                    <button onclick="retryAnalysis()" class="btn-retry">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2025 Trend Compass AI. Powered by Qloo + Gemini AI</p>
+            <div class="footer-links">
+                <a href="https://github.com/nishanajihah/trend-compass-ai" onclick="showAbout()">About</a>
+                <!-- <a href="#" onclick="showPrivacy()">Privacy</a> -->
+                <a href="/docs" target="_blank">API Docs</a>
+            </div>
+        </footer>
+    </div>
+
+</body>
+</html>l>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + TS</title>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
