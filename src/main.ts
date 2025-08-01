@@ -949,26 +949,77 @@ function initializeRateLimitDisplay(): void {
 }
 
 /**
- * Check API status
+ * Enhanced API status management with better refresh logic
  */
-async function checkAPIStatus(): Promise<void> {
+async function checkAPIStatus(showLoadingState: boolean = false): Promise<void> {
+    const statusElement = elements.apiStatus;
+    const retryBtn = document.querySelector('.btn-retry');
+    
+    // Show loading state if requested
+    if (showLoadingState && statusElement) {
+        updateAPIStatus('warning', '🔄 Checking connection...');
+        if (retryBtn) {
+            retryBtn.classList.add('loading');
+            const icon = retryBtn.querySelector('i');
+            if (icon) icon.className = 'fas fa-spinner fa-spin';
+        }
+    }
+    
     try {
+        // Add timeout for connection check
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
         const response = await fetch(`${API_BASE_URL}/health`, {
             method: 'GET',
-            headers: { 'Accept': 'application/json' }
+            headers: { 'Accept': 'application/json' },
+            signal: controller.signal
         });
         
+        clearTimeout(timeoutId);
+        
         if (response.ok) {
-            updateAPIStatus('healthy', '🟢 API Connected');
+            updateAPIStatus('healthy', '🟢 API Connected & Ready');
             hideServerBanner();
+            
+            // Clear any cached connection issues
+            sessionStorage.removeItem('connectionIssue');
+            
+            // Show success feedback briefly
+            if (showLoadingState) {
+                setTimeout(() => {
+                    updateAPIStatus('healthy', '🟢 Connection Restored');
+                }, 500);
+            }
         } else {
-            throw new Error('API health check failed');
+            throw new Error(`API health check failed with status ${response.status}`);
         }
         
     } catch (error) {
         console.warn('⚠️ API connection issue:', error);
-        updateAPIStatus('error', '🔴 API Disconnected');
+        
+        // Determine error type for better messaging
+        let errorMessage = '🔴 API Disconnected';
+        if (error instanceof Error) {
+            if (error.name === 'AbortError') {
+                errorMessage = '🔴 Connection Timeout';
+            } else if (error.message.includes('Failed to fetch')) {
+                errorMessage = '🔴 Network Error';
+            }
+        }
+        
+        updateAPIStatus('error', errorMessage);
         showServerBanner();
+        
+        // Cache the connection issue
+        sessionStorage.setItem('connectionIssue', 'true');
+    } finally {
+        // Reset loading state
+        if (retryBtn) {
+            retryBtn.classList.remove('loading');
+            const icon = retryBtn.querySelector('i');
+            if (icon) icon.className = 'fas fa-sync-alt';
+        }
     }
 }
 
@@ -1068,28 +1119,164 @@ function hideServerBanner(): void {
 }
 
 /**
- * Retry analysis
+ * Enhanced retry analysis with better state management
  */
 function retryAnalysis(): void {
-    // Check which tab is active and retry accordingly
-    const activeTab = document.querySelector('.tab-content.active');
-    if (activeTab?.id === 'trendAnalysisTab') {
-        const input = elements.trendQuery as HTMLInputElement;
-        const topic = input?.value?.trim();
-        if (topic) {
-            analyzeTrend(topic);
-        } else {
-            hideValidation('trendValidation');
+    console.log('🔄 Retrying analysis...');
+    
+    // First check API connection
+    checkAPIStatus(true).then(() => {
+        // Clear any previous error states
+        hideAllErrors();
+        
+        // Check which tab is active and retry accordingly
+        const activeTab = document.querySelector('.tab-content.active');
+        
+        if (activeTab?.id === 'trendAnalysisTab') {
+            const form = elements.trendForm as HTMLFormElement;
+            const input = elements.trendQuery as HTMLInputElement;
+            const topic = input?.value?.trim();
+            
+            if (topic && form) {
+                // Reset form state
+                const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-chart-line"></i> Analyze Trends';
+                }
+                
+                // Trigger form submission
+                form.dispatchEvent(new Event('submit'));
+            } else {
+                showValidationMessage('trendValidation', 'Please enter a trend to analyze.', 'warning');
+            }
+            
+        } else if (activeTab?.id === 'audienceAnalysisTab') {
+            const form = elements.audienceForm as HTMLFormElement;
+            const input = elements.audienceDescription as HTMLTextAreaElement;
+            const description = input?.value?.trim();
+            
+            if (description && form) {
+                // Reset form state
+                const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-users"></i> Analyze Audience';
+                }
+                
+                // Trigger form submission
+                form.dispatchEvent(new Event('submit'));
+            } else {
+                showValidationMessage('audienceValidation', 'Please describe your target audience.', 'warning');
+            }
         }
-    } else if (activeTab?.id === 'audienceAnalysisTab') {
-        const input = elements.audienceDescription as HTMLTextAreaElement;
-        const description = input?.value?.trim();
-        if (description) {
-            analyzeAudience(description);
-        } else {
-            hideValidation('audienceValidation');
+    }).catch(() => {
+        // If API check fails, still allow retry but show warning
+        showValidationMessage('trendValidation', 'Connection issue detected. Retrying anyway...', 'warning');
+        
+        setTimeout(() => {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab?.id === 'trendAnalysisTab') {
+                const form = elements.trendForm as HTMLFormElement;
+                if (form) form.dispatchEvent(new Event('submit'));
+            } else if (activeTab?.id === 'audienceAnalysisTab') {
+                const form = elements.audienceForm as HTMLFormElement;
+                if (form) form.dispatchEvent(new Event('submit'));
+            }
+        }, 1000);
+    });
+}
+
+/**
+ * Hide all error states
+ */
+function hideAllErrors(): void {
+    hideValidation('trendValidation');
+    hideValidation('audienceValidation');
+    elements.errorDisplay?.classList.add('d-none');
+}
+
+/**
+ * Enhanced refresh function for page reset
+ */
+function refreshApplication(): void {
+    console.log('🔄 Refreshing application...');
+    
+    // Clear all cached data
+    sessionStorage.clear();
+    localStorage.removeItem('apiStatusCache');
+    
+    // Reset all form states
+    resetAllForms();
+    
+    // Hide all results and errors
+    hideAllResults();
+    hideAllErrors();
+    
+    // Reset API status
+    updateAPIStatus('warning', '🔄 Refreshing...');
+    
+    // Re-check API status
+    setTimeout(() => {
+        checkAPIStatus(true);
+    }, 500);
+    
+    // Show refresh feedback
+    const banner = elements.serverStatusBanner;
+    if (banner) {
+        const content = banner.querySelector('.banner-content span');
+        if (content) {
+            const originalText = content.textContent;
+            content.textContent = '✅ Application refreshed successfully!';
+            
+            setTimeout(() => {
+                if (content && originalText) {
+                    content.textContent = originalText;
+                }
+            }, 3000);
         }
     }
+}
+
+/**
+ * Reset all forms to initial state
+ */
+function resetAllForms(): void {
+    // Reset trend form
+    const trendForm = elements.trendForm as HTMLFormElement;
+    if (trendForm) {
+        trendForm.reset();
+        updateCharacterCount('trendQuery', 'trendCharCount', 200);
+        
+        const submitBtn = trendForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-chart-line"></i> Analyze Trends';
+        }
+    }
+    
+    // Reset audience form
+    const audienceForm = elements.audienceForm as HTMLFormElement;
+    if (audienceForm) {
+        audienceForm.reset();
+        updateCharacterCount('audienceDescription', 'audienceCharCount', 300);
+        
+        const submitBtn = audienceForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-users"></i> Analyze Audience';
+        }
+    }
+}
+
+/**
+ * Hide all results
+ */
+function hideAllResults(): void {
+    hideTrendResults();
+    hideAudienceResults();
+    hideTrendLoading();
+    hideAudienceLoading();
 }
 
 /**
@@ -1211,13 +1398,13 @@ function clearAllInputs(): void {
 }
 
 function testConnection(): void {
-    checkAPIStatus();
+    checkAPIStatus(true);
 }
 
 function clearCache(): void {
     sessionStorage.clear();
     localStorage.clear();
-    location.reload();
+    refreshApplication();
 }
 
 /**
@@ -1254,9 +1441,10 @@ function showPrivacy(): void {
 declare global {
     interface Window {
         retryAnalysis: () => void;
+        refreshApplication: () => void;
         exportResults: (type: 'trend' | 'audience') => void;
         saveResults: (type: 'trend' | 'audience') => void;
-        checkAPIStatus: () => Promise<void>;
+        checkAPIStatus: (showLoading?: boolean) => Promise<void>;
         showAbout: () => void;
         showPrivacy: () => void;
         toggleAdvancedOptions: (type: 'trend' | 'audience') => void;
@@ -1270,6 +1458,7 @@ declare global {
 }
 
 window.retryAnalysis = retryAnalysis;
+window.refreshApplication = refreshApplication;
 window.exportResults = exportResults;
 window.saveResults = saveResults;
 window.checkAPIStatus = checkAPIStatus;

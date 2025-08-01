@@ -28,7 +28,7 @@
             <p class="subtitle">Next-Gen AI-Powered Trend Forecasting & Cultural Insights</p>
             
             <!-- API Status Indicator -->
-            <div id="apiStatus" class="api-status">
+            <div id="apiStatus" class="api-status" onclick="checkAPIStatus(true)" title="Click to refresh connection status">
                 <span class="status-indicator status-warning"></span>
                 <span>Checking API status...</span>
             </div>
@@ -38,9 +38,14 @@
                 <div class="banner-content">
                     <i class="fas fa-exclamation-triangle"></i>
                     <span>Server connection issue detected. This could be due to the server being down or rate limits exceeded (15 requests per day).</span>
-                    <button onclick="checkAPIStatus()" class="btn-retry">
-                        <i class="fas fa-sync-alt"></i> Retry Connection
-                    </button>
+                    <div class="banner-controls">
+                        <button onclick="checkAPIStatus(true)" class="btn-retry">
+                            <i class="fas fa-sync-alt"></i> Retry Connection
+                        </button>
+                        <button onclick="refreshApplication()" class="btn-retry" style="margin-left: 8px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1)); border-color: rgba(16, 185, 129, 0.3); color: #059669;">
+                            <i class="fas fa-redo"></i> Full Refresh
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -263,6 +268,9 @@
             <div id="testControls" class="test-controls" style="display: none;">
                 <button onclick="testConnection()" class="btn-test">
                     <i class="fas fa-wifi"></i> Test Connection
+                </button>
+                <button onclick="refreshApplication()" class="btn-test">
+                    <i class="fas fa-redo"></i> Full Refresh
                 </button>
                 <button onclick="clearCache()" class="btn-test">
                     <i class="fas fa-trash"></i> Clear Cache
