@@ -4,17 +4,18 @@ Main FastAPI server and routes
 
 import os
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from dotenv import load_dotenv
 
 # Load environment variables from .env file in parent directory
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-# Import routers (after loading env vars)
+# Import routers and middleware (after loading env vars)
 from routers import trends
+from middleware.rate_limiter import rate_limiter
 
 # Create the FastAPI application with enhanced Swagger UI
 app = FastAPI(
@@ -51,6 +52,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add rate limiting middleware
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Apply rate limiting to API endpoints"""
+    
+    # Skip rate limiting for health checks and docs
+    if request.url.path in ["/", "/health", "/docs", "/redoc", "/openapi.json"]:
+        response = await call_next(request)
+        return response
+    
+    # Check rate limit for API endpoints
+    if request.url.path.startswith("/api/"):
+        rate_limit_response = rate_limiter.check_rate_limit(request)
+        if rate_limit_response:
+            return rate_limit_response
+    
+    # Continue with request
+    response = await call_next(request)
+    
+    # Add rate limit headers to response
+    if request.url.path.startswith("/api/"):
+        remaining = rate_limiter.get_remaining_requests(request)
+        response.headers["X-RateLimit-Limit"] = str(rate_limiter.max_requests_per_day)
+        response.headers["X-RateLimit-Remaining"] = str(remaining)
+    
+    return response
+
 # Include routers for different endpoints
 app.include_router(trends.router)
 
@@ -79,6 +107,26 @@ async def health_check():
         "service": "trend-compass-api",
         "version": "1.0.0"
     }
+
+# Development endpoint to reset rate limits
+@app.post("/api/reset-rate-limits", tags=["Development"])
+async def reset_rate_limits():
+    """Reset rate limits for development purposes."""
+    try:
+        rate_limiter.reset_all_limits()
+        return {
+            "status": "success",
+            "message": "Rate limits have been reset. You now have 15 fresh requests.",
+            "max_requests": rate_limiter.max_requests_per_day
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "error",
+                "message": f"Failed to reset rate limits: {str(e)}"
+            }
+        )
 
 if __name__ == "__main__":
     import uvicorn

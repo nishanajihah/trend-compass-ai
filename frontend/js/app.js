@@ -1,6 +1,18 @@
 /**
- * Trend Compass - Clean Application JavaScript
- * Production version with minimal logging and proper error handling
+ * Trend Compass - Clean Application JavaSc    // Auto-check API status on load
+    setTimeout(() => {
+        checkAPIStatus();
+    }, 1000);
+    
+    // Show test controls if in development
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        const testControls = document.getElementById('testControls');
+        if (testControls) {
+            testControls.style.display = 'block';
+        }
+    }
+    
+    console.log('✅ App initialized successfully!'); * Production version with minimal logging and proper error handling
  */
 
 // API Configuration
@@ -46,10 +58,28 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCharacterCounters();
     initializeValidation();
     
-    // Auto-check API status on load
+    // Auto-check API status on load (but only once per session to avoid rate limits)
+    const hasCheckedThisSession = sessionStorage.getItem('apiChecked');
+    if (!hasCheckedThisSession) {
+        setTimeout(() => {
+            checkApiStatus();
+            sessionStorage.setItem('apiChecked', 'true');
+        }, 500);
+    } else {
+        // Just show cached status without making API call
+        const statusElement = document.getElementById('apiStatus');
+        if (statusElement) {
+            const indicator = statusElement.querySelector('.status-indicator');
+            const text = statusElement.querySelector('span:last-child');
+            indicator.className = 'status-indicator status-warning';
+            text.textContent = '⚠️ Status check skipped - conserving API requests';
+        }
+    }
+    
+    // Initialize rate limit display
     setTimeout(() => {
-        checkApiStatus();
-    }, 500);
+        initializeRateLimitDisplay();
+    }, 1000);
     
     console.log('✅ App initialized successfully!');
 });
@@ -209,11 +239,11 @@ async function handleTrendSubmission(e) {
     hideResults(elements.trendResults);
     
     try {
-        // Add 10 second timeout
+        // Add 30 second timeout for AI processing
         const controller = new AbortController();
         const timeoutId = setTimeout(() => {
             controller.abort();
-        }, 10000);
+        }, 30000);
         
         const response = await fetch(`${API_BASE_URL}/api/trends/analyze`, {
             method: 'POST',
@@ -228,28 +258,57 @@ async function handleTrendSubmission(e) {
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
+            
+            // Handle rate limiting
+            if (response.status === 429) {
+                const resetTime = errorData?.reset_time || 'several hours';
+                throw new Error(`⚠️ DAILY LIMIT REACHED (15 requests per day)\n\nYou have used all your daily requests. Please wait ${resetTime} hours until tomorrow to try again.\n\nThis limit helps us control AI API costs during the hackathon.`);
+            }
+            
             throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
         
         const result = await response.json();
+        
+        // Update rate limit display from response headers
+        const rateLimit = response.headers.get('X-RateLimit-Limit');
+        const rateLimitRemaining = response.headers.get('X-RateLimit-Remaining');
+        
+        if (rateLimit && rateLimitRemaining) {
+            const rateLimitElement = document.getElementById('rateLimitStatus');
+            const rateLimitText = document.getElementById('rateLimitText');
+            
+            if (rateLimitText) {
+                rateLimitText.textContent = `Requests remaining today: ${rateLimitRemaining}/${rateLimit}`;
+            }
+            
+            updateFormRateLimits(rateLimitRemaining, rateLimit);
+        }
+        
+        // Hide loading before displaying results
+        hideLoading(elements.trendLoading);
+        
+        // Display results
         displayTrendResults(result);
         
     } catch (error) {
         console.error('Trend analysis failed:', error);
         
+        // Make sure loading is hidden on error
+        hideLoading(elements.trendLoading);
+        
         let errorMessage = 'Failed to analyze trend. ';
         if (error.name === 'AbortError') {
-            errorMessage = 'Request timed out. The server may be experiencing heavy load. Please try again.';
-        } else if (error.message.includes('Failed to fetch')) {
-            errorMessage = 'Unable to connect to the server. Please check your connection and try again.';
+            errorMessage = 'Request timed out. AI analysis takes time - please try again.';
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorMessage = '🔌 Server is currently down or unreachable. Please try again later or contact support.';
+        } else if (error.message.includes('500')) {
+            errorMessage = '⚠️ Server error occurred. Our team has been notified. Please try again in a few minutes.';
         } else {
             errorMessage += error.message;
         }
         
         showErrorMessage(errorMessage);
-        
-    } finally {
-        hideLoading(elements.trendLoading);
     }
 }
 
@@ -275,11 +334,11 @@ async function handleAudienceSubmission(e) {
     hideResults(elements.audienceResults);
     
     try {
-        // Add 10 second timeout
+        // Add 30 second timeout for AI processing
         const controller = new AbortController();
         const timeoutId = setTimeout(() => {
             controller.abort();
-        }, 10000);
+        }, 30000);
         
         const response = await fetch(`${API_BASE_URL}/api/audience/analyze`, {
             method: 'POST',
@@ -294,28 +353,57 @@ async function handleAudienceSubmission(e) {
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
+            
+            // Handle rate limiting
+            if (response.status === 429) {
+                const resetTime = errorData?.reset_time || 'several hours';
+                throw new Error(`⚠️ DAILY LIMIT REACHED (15 requests per day)\n\nYou have used all your daily requests. Please wait ${resetTime} hours until tomorrow to try again.\n\nThis limit helps us control AI API costs during the hackathon.`);
+            }
+            
             throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
         
         const result = await response.json();
+        
+        // Update rate limit display from response headers
+        const rateLimit = response.headers.get('X-RateLimit-Limit');
+        const rateLimitRemaining = response.headers.get('X-RateLimit-Remaining');
+        
+        if (rateLimit && rateLimitRemaining) {
+            const rateLimitElement = document.getElementById('rateLimitStatus');
+            const rateLimitText = document.getElementById('rateLimitText');
+            
+            if (rateLimitText) {
+                rateLimitText.textContent = `Requests remaining today: ${rateLimitRemaining}/${rateLimit}`;
+            }
+            
+            updateFormRateLimits(rateLimitRemaining, rateLimit);
+        }
+        
+        // Hide loading before displaying results
+        hideLoading(elements.audienceLoading);
+        
+        // Display results
         displayAudienceResults(result);
         
     } catch (error) {
         console.error('Audience analysis failed:', error);
         
+        // Make sure loading is hidden on error
+        hideLoading(elements.audienceLoading);
+        
         let errorMessage = 'Failed to analyze audience. ';
         if (error.name === 'AbortError') {
-            errorMessage = 'Request timed out. The server may be experiencing heavy load. Please try again.';
-        } else if (error.message.includes('Failed to fetch')) {
-            errorMessage = 'Unable to connect to the server. Please check your connection and try again.';
+            errorMessage = 'Request timed out. AI analysis takes time - please try again.';
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorMessage = '🔌 Server is currently down or unreachable. Please try again later or contact support.';
+        } else if (error.message.includes('500')) {
+            errorMessage = '⚠️ Server error occurred. Our team has been notified. Please try again in a few minutes.';
         } else {
             errorMessage += error.message;
         }
         
         showErrorMessage(errorMessage);
-        
-    } finally {
-        hideLoading(elements.audienceLoading);
     }
 }
 
@@ -327,6 +415,9 @@ function displayTrendResults(data) {
         console.error('Results elements not found');
         return;
     }
+    
+    // Ensure results are hidden first
+    elements.trendResults.style.display = 'none';
     
     const resultsHTML = `
         <div class="insight-section">
@@ -363,7 +454,7 @@ function displayTrendResults(data) {
     
     elements.trendResultsContent.innerHTML = resultsHTML;
     
-    // Show results
+    // Show results with smooth transition
     elements.trendResults.classList.remove('d-none');
     elements.trendResults.style.display = 'block';
     
@@ -695,6 +786,10 @@ function showHelperMenu(button) {
             <i class="fas fa-heartbeat"></i>
             <span>Check API Status</span>
         </div>
+        <div class="helper-item" onclick="resetRateLimits()">
+            <i class="fas fa-refresh"></i>
+            <span>Reset Rate Limits (Dev)</span>
+        </div>
         <div class="helper-item" onclick="openDeveloperDocs()">
             <i class="fas fa-code"></i>
             <span>Developer Docs</span>
@@ -833,10 +928,41 @@ function openDeveloperDocs() {
 }
 
 /**
+ * Reset rate limits (development only)
+ */
+async function resetRateLimits() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/reset-rate-limits`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            showSuccessMessage('Rate limits reset successfully! You now have 15 fresh requests.');
+            // Refresh rate limit displays
+            setTimeout(() => {
+                initializeRateLimitDisplay();
+                checkApiStatus();
+            }, 500);
+        } else {
+            showErrorMessage('Failed to reset rate limits. Make sure the backend server is running.');
+        }
+    } catch (error) {
+        showErrorMessage('Could not connect to server to reset rate limits.');
+    }
+    
+    document.querySelector('.helper-menu')?.remove();
+}
+
+/**
  * Check API status and update the indicator
  */
 async function checkApiStatus() {
     const statusElement = document.getElementById('apiStatus');
+    const rateLimitElement = document.getElementById('rateLimitStatus');
+    const rateLimitText = document.getElementById('rateLimitText');
     
     if (!statusElement) {
         return;
@@ -861,19 +987,56 @@ async function checkApiStatus() {
         
         const data = await response.json();
         
+        // Update rate limit info from headers
+        const rateLimit = response.headers.get('X-RateLimit-Limit');
+        const rateLimitRemaining = response.headers.get('X-RateLimit-Remaining');
+        
+        if (rateLimit && rateLimitRemaining && rateLimitElement && rateLimitText) {
+            rateLimitText.textContent = `Requests remaining today: ${rateLimitRemaining}/${rateLimit}`;
+            rateLimitElement.style.display = 'flex';
+            
+            // Update form rate limit displays
+            updateFormRateLimits(rateLimitRemaining, rateLimit);
+        }
+        
         // Update based on response
         if (data.status === 'healthy') {
             indicator.className = 'status-indicator status-healthy';
-            text.textContent = `✅ APIs Ready - Qloo: ${data.services.qloo_api.status}, Gemini: ${data.services.gemini_llm.status}`;
+            text.textContent = `✨ APIs Ready - Qloo: ${data.services.qloo_api.status}, Gemini: ${data.services.gemini_llm.status}`;
+            
+            // Hide server status banner if it's showing
+            const serverBanner = document.getElementById('serverStatusBanner');
+            if (serverBanner) {
+                serverBanner.classList.add('d-none');
+            }
         } else {
             indicator.className = 'status-indicator status-warning';
             text.textContent = '⚠️ Some services in demo mode';
+            
+            // Hide server status banner since server is responding
+            const serverBanner = document.getElementById('serverStatusBanner');
+            if (serverBanner) {
+                serverBanner.classList.add('d-none');
+            }
         }
         
     } catch (error) {
         console.error('API status check failed:', error);
         indicator.className = 'status-indicator status-error';
-        text.textContent = '❌ Unable to connect to server';
+        
+        // Show server status banner
+        const serverBanner = document.getElementById('serverStatusBanner');
+        if (serverBanner) {
+            serverBanner.classList.remove('d-none');
+        }
+        
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.name === 'TypeError') {
+            text.textContent = '🔌 Server is down - Please start the backend server';
+        } else if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
+            text.textContent = '⚠️ API rate limit exceeded - Try again later';
+        } else {
+            text.textContent = '⚠️ Server connection error - Check your network';
+        }
     }
     
     // Close helper menu
@@ -882,5 +1045,216 @@ async function checkApiStatus() {
 
 function saveInsight(type) {
     console.log(`Saving ${type} insight...`);
-    // Placeholder for save functionality
+    
+    // Get stored data
+    const data = type === 'trend' ? window.lastTrendData : window.lastAudienceData;
+    if (!data) {
+        showErrorMessage('No data available to save. Please run an analysis first.');
+        return;
+    }
+    
+    // Create a comprehensive save object
+    const saveData = {
+        type: type,
+        timestamp: new Date().toISOString(),
+        data: data,
+        summary: data.summary || 'No summary available',
+        insights: data.insights || [],
+        recommendations: data.recommendations || []
+    };
+    
+    // Add type-specific data
+    if (type === 'audience' && data.cultural_affinities) {
+        saveData.cultural_affinities = data.cultural_affinities;
+    }
+    
+    // Save to localStorage for persistence
+    const savedInsights = JSON.parse(localStorage.getItem('savedInsights') || '[]');
+    savedInsights.push(saveData);
+    localStorage.setItem('savedInsights', JSON.stringify(savedInsights));
+    
+    // Also download as JSON file
+    const filename = `saved-${type}-insight-${Date.now()}.json`;
+    const jsonString = JSON.stringify(saveData, null, 2);
+    downloadFile(jsonString, filename, 'application/json');
+    
+    // Show success message
+    showSuccessMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} insight saved successfully!`);
+}
+
+// Helper function to show success messages
+function showSuccessMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'alert alert-success';
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+    `;
+    messageDiv.textContent = message;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => document.body.removeChild(messageDiv), 300);
+    }, 3000);
+}
+
+/**
+ * Test function for export/save functionality
+ */
+function setupTestDataAndShow() {
+    // Mock trend data
+    window.lastTrendData = {
+        summary: "AI and sustainability are trending topics in 2024. These topics show high engagement across social platforms.",
+        insights: [
+            {
+                title: "AI Adoption Surge",
+                description: "Artificial Intelligence adoption has increased by 300% this year",
+                confidence: 0.85
+            },
+            {
+                title: "Green Technology Focus",
+                description: "Sustainable tech solutions are gaining mainstream attention",
+                confidence: 0.78
+            }
+        ],
+        recommendations: [
+            "Invest in AI-powered tools for business automation",
+            "Develop eco-friendly product lines",
+            "Create content around sustainability themes"
+        ]
+    };
+
+    // Mock audience data
+    window.lastAudienceData = {
+        summary: "Tech-savvy millennials aged 25-35 interested in eco-friendly solutions and digital innovation.",
+        insights: [
+            {
+                title: "Digital Native Behavior",
+                description: "Audience prefers mobile-first experiences and social commerce",
+                confidence: 0.92
+            }
+        ],
+        cultural_affinities: [
+            {
+                title: "Tech Enthusiasm",
+                description: "High interest in emerging technologies and gadgets",
+                confidence: 0.90
+            },
+            {
+                title: "Environmental Consciousness",
+                description: "Strong preference for sustainable and eco-friendly products",
+                confidence: 0.82
+            }
+        ],
+        recommendations: [
+            "Use Instagram and TikTok for marketing campaigns",
+            "Highlight product sustainability in messaging",
+            "Offer mobile-optimized shopping experiences",
+            "Partner with eco-conscious influencers"
+        ]
+    };
+    
+    // Show trend results section with test data
+    const trendResults = document.getElementById('trendResults');
+    const audienceResults = document.getElementById('audienceResults');
+    
+    if (trendResults) {
+        trendResults.classList.remove('d-none');
+        document.getElementById('trendResultsContent').innerHTML = `
+            <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; margin: 15px 0; border-left: 4px solid #3b82f6;">
+                <h4 style="color: #1e40af; margin-bottom: 10px;">🧪 Test Data Loaded</h4>
+                <p><strong>Summary:</strong> ${window.lastTrendData.summary}</p>
+                <p><strong>Insights:</strong> ${window.lastTrendData.insights.length} insights loaded</p>
+                <p><strong>Recommendations:</strong> ${window.lastTrendData.recommendations.length} recommendations loaded</p>
+                <p style="margin-top: 15px; color: #f59e0b; font-weight: bold;">⚠️ Remember: 15 requests per day for hackathon demo!</p>
+                <p style="margin-top: 10px; color: #059669; font-weight: bold;">✅ Try the export and save buttons above!</p>
+            </div>
+        `;
+    }
+    
+    if (audienceResults) {
+        audienceResults.classList.remove('d-none');
+        document.getElementById('audienceResultsContent').innerHTML = `
+            <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; margin: 15px 0; border-left: 4px solid #10b981;">
+                <h4 style="color: #065f46; margin-bottom: 10px;">🧪 Audience Test Data Loaded</h4>
+                <p><strong>Summary:</strong> ${window.lastAudienceData.summary}</p>
+                <p><strong>Cultural Affinities:</strong> ${window.lastAudienceData.cultural_affinities.length} affinities loaded</p>
+                <p><strong>Recommendations:</strong> ${window.lastAudienceData.recommendations.length} recommendations loaded</p>
+                <p style="margin-top: 15px; color: #f59e0b; font-weight: bold;">⚠️ Remember: 15 requests per day for hackathon demo!</p>
+                <p style="margin-top: 10px; color: #7c3aed; font-weight: bold;">✅ Try the export and save buttons above!</p>
+            </div>
+        `;
+    }
+    
+    showSuccessMessage('Test data loaded! Export/Save buttons are now functional.');
+    console.log('🧪 Test data loaded successfully. You can now test all export/save functions.');
+}
+
+/**
+ * Initialize rate limit display on page load
+ */
+function initializeRateLimitDisplay() {
+    const trendRateLimit = document.getElementById('trendRateLimit');
+    const audienceRateLimit = document.getElementById('audienceRateLimit');
+    
+    // Set initial message
+    const initialMessage = "Usage limits: 15 requests available today!";
+    
+    [trendRateLimit, audienceRateLimit].forEach(element => {
+        if (element) {
+            const span = element.querySelector('span');
+            if (span) {
+                span.textContent = initialMessage;
+            }
+        }
+    });
+}
+
+/**
+ * Update form rate limit displays
+ */
+function updateFormRateLimits(remaining, total) {
+    const trendRateLimit = document.getElementById('trendRateLimit');
+    const audienceRateLimit = document.getElementById('audienceRateLimit');
+    
+    const remainingNum = parseInt(remaining);
+    const totalNum = parseInt(total);
+    
+    let message, isWarning;
+    
+    if (remainingNum === 0) {
+        message = `⛔ No requests remaining today (${remainingNum}/${totalNum})`;
+        isWarning = true;
+    } else if (remainingNum <= 3) {
+        message = `⚠️ Only ${remainingNum} requests left today (${remainingNum}/${totalNum})`;
+        isWarning = true;
+    } else {
+        message = `✅ ${remainingNum} requests remaining today (${remainingNum}/${totalNum})`;
+        isWarning = false;
+    }
+    
+    [trendRateLimit, audienceRateLimit].forEach(element => {
+        if (element) {
+            const span = element.querySelector('span');
+            if (span) {
+                span.textContent = message;
+            }
+            
+            if (isWarning) {
+                element.classList.add('warning');
+            } else {
+                element.classList.remove('warning');
+            }
+        }
+    });
 }
