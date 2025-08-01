@@ -21,12 +21,13 @@ def main():
     port = os.environ.get('PORT', '8000')
     print(f"🌐 Starting server on port: {port}")
     
-    # Start the FastAPI server
+    # Start the FastAPI server with gunicorn for production
     cmd = [
-        sys.executable, '-m', 'uvicorn', 
+        'gunicorn', 
+        '-w', '4',  # 4 worker processes
+        '-k', 'uvicorn.workers.UvicornWorker',  # Use uvicorn workers
         'main:app', 
-        '--host', '0.0.0.0', 
-        '--port', port
+        '--bind', f'0.0.0.0:{port}'
     ]
     
     print(f"🔧 Running command: {' '.join(cmd)}")
