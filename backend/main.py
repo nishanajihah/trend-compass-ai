@@ -85,7 +85,11 @@ app.include_router(trends.router)
 
 # Mount static files (Vite build output)
 dist_path = Path(__file__).parent.parent / "dist"
+print(f"🔍 Looking for frontend build at: {dist_path}")
+print(f"📁 Dist folder exists: {dist_path.exists()}")
+
 if dist_path.exists():
+    print("✅ Frontend build found - setting up static file serving")
     app.mount("/assets", StaticFiles(directory=str(dist_path / "assets")), name="assets")
 
     # Catch-all route to serve frontend (must be last)
@@ -104,11 +108,13 @@ if dist_path.exists():
         # Serve index.html for all other routes (SPA routing)
         index_file = dist_path / "index.html"
         if index_file.exists():
+            print(f"📄 Serving frontend: {path} -> index.html")
             return FileResponse(str(index_file))
         else:
-            return JSONResponse(status_code=404, content={"error": "Frontend not built. Run 'npm run build' first."})
+            return JSONResponse(status_code=404, content={"error": "Frontend index.html not found"})
 
 else:
+    print("❌ Frontend build not found - serving API info at root")
     # If dist folder doesn't exist, show helpful message at root
     @app.get("/", tags=["Health"])
     async def root_no_frontend():
@@ -120,6 +126,7 @@ else:
             "version": "1.0.0",
             "docs": "/docs",
             "note": "Run 'npm run build' to build the frontend",
+            "build_path_checked": str(dist_path),
             "endpoints": {
                 "trend_analysis": "/api/trends/analyze",
                 "audience_insights": "/api/audience/analyze"
