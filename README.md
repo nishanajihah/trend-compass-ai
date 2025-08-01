@@ -7,7 +7,7 @@ An AI-powered trend forecasting and audience insights tool that demonstrates the
 ## 🚀 Live Website & Deployment
 
 - **Live Website:** [https://trend-compass-ai.onrender.com/](https://trend-compass-ai.onrender.com/)
-- **Video:** [https://youtube.com/your-video-link](https://youtube.com/your-video-link)
+- **Video:** [https://youtu.be/Q0bDZkC0M8w](https://youtu.be/Q0bDZkC0M8w)
 
 ## ✨ Project Overview
 
@@ -124,6 +124,5 @@ This is a hackathon project, but suggestions for improvements are always welcome
 
 ## 📬 Contact
 
-[Nisha Najihah](https://github.com/nishanajihah) - nishanajihah.dev@gmail.com
-
+Email: nishanajihah.dev@gmail.com
 Project Link: [https://github.com/nishanajihah/trend-compass-ai](https://github.com/nishanajihah/trend-compass-ai)
