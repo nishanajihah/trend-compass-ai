@@ -29,9 +29,9 @@ An AI-powered trend forecasting and audience insights tool that demonstrates the
 
 ## 💡 Our Development Journey: Challenges & Learnings
 
-Building Trend Compass for this hackathon was a challenging but rewarding process, especially as a new developer to this specific tech stack. We encountered several key challenges that shaped our final product:
+Building Trend Compass for this hackathon was a challenging but rewarding process, especially as a new developer to this specific tech stack. I encountered several key challenges that shaped our final product:
 
-1.  **The Deployment Maze**: We initially struggled to deploy our Python backend. We tried deploying the static frontend to platforms like Netlify and the backend separately, which resulted in numerous errors and a lot of debugging time. We quickly realized that our full-stack Python application required a different kind of hosting. This led us to switch to **Render**, which was a fantastic discovery, offering seamless support for Python web services like FastAPI.
+1.  **The Deployment Maze**: I  initially struggled to deploy our Python backend. I tried deploying the static frontend to platforms like Netlify and the backend separately, which resulted in numerous errors and a lot of debugging time. I quickly realized that our full-stack Python application required a different kind of hosting. This led us to switch to **Render**, which was a fantastic discovery, offering seamless support for Python web services like FastAPI.
 2.  **Frontend Workflow**: Our initial static HTML, CSS, and JS frontend worked well locally, but it wasn't scalable or easy to deploy. The decision to switch to **Vite with TypeScript** was a game-changer. It streamlined our development process with hot reloading and provided a more robust, modern foundation for our UI, which ultimately led to the polished, responsive interface you see today.
 3.  **API Integration**: Learning to connect two new and powerful APIs—**FastAPI** for our backend, and then integrating both the **Qloo and Gemini APIs**—presented a steep learning curve. The process wasn't easy, but through perseverance, we built a robust backend that successfully orchestrates data from both services to create the valuable reports you'll see in the demo.
 
@@ -125,4 +125,5 @@ This is a hackathon project, but suggestions for improvements are always welcome
 ## 📬 Contact
 
 Email: nishanajihah.dev@gmail.com
+
 Project Link: [https://github.com/nishanajihah/trend-compass-ai](https://github.com/nishanajihah/trend-compass-ai)
