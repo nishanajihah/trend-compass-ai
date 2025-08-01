@@ -2,12 +2,12 @@
 
 An AI-powered trend forecasting and audience insights tool that demonstrates the combined power of Qloo's cultural affinity data and Google's Gemini LLM.
 
-![Trend Compass Screenshot](https://via.placeholder.com/800x400?text=Trend+Compass+Screenshot)
+![Trend Compass AI Screenshot](C:\Users\nisha\Desktop\nnc25\web\trend-compass\images\trend-compass-ai.png)
 
-## 🚀 Live Demo & Video
+## 🚀 Live Website & Video
 
-- **Live Demo:** [https://your-project-url.com](https://your-project-url.com)
-- **Demo Video:** [https://youtube.com/your-video-link](https://youtube.com/your-video-link)
+- **Live Website:** [https://trend-compass-ai.onrender.com/](https://trend-compass-ai.onrender.com/)
+- **Video:** [https://youtube.com/your-video-link](https://youtube.com/your-video-link)
 
 ## ✨ Project Overview
 
