@@ -13,11 +13,14 @@ const API_BASE_URL = (() => {
         window.location.hostname === '127.0.0.1' ||
         window.location.port === '5173' ||
         window.location.port === '5174') { // Vite ports
-        return 'http://localhost:8000';
+        
+        // For local development, use the deployed backend on Render
+        // Change this to 'http://localhost:8000' if you're running backend locally
+        return 'https://trend-compass-ai.onrender.com';
     }
     // For production deployment on Render or other platforms
-    // When deployed on Render, use same domain (backend serves API and frontend)
-    return window.location.origin;
+    // When deployed on Render, use the deployed backend API
+    return 'https://trend-compass-ai.onrender.com';
 })();
 
 // DOM Elements
@@ -228,9 +231,11 @@ async function handleTrendSubmission(e: Event): Promise<void> {
             if (error.name === 'AbortError') {
                 errorMessage = 'Request timed out. AI analysis takes time - please try again.';
             } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('fetch')) {
-                errorMessage = '🔌 Server is currently down or unreachable. Please try again later or contact support.';
+                errorMessage = '🔌 Cannot connect to server. This could be due to:\n\n• Rate limit exceeded (15 requests per day)\n• Server is temporarily down\n• Network connectivity issues\n\nPlease try again later or reset your daily quota.';
             } else if (error.message.includes('500')) {
                 errorMessage = '⚠️ Server error occurred. Our team has been notified. Please try again in a few minutes.';
+            } else if (error.message.includes('429')) {
+                errorMessage = '⚠️ DAILY LIMIT REACHED (15 requests per day)\n\nYou have used all your daily requests. Please wait until tomorrow to try again, or contact support to reset your quota.';
             } else {
                 errorMessage += error.message;
             }
@@ -419,9 +424,11 @@ async function analyzeTrend(topic: string): Promise<void> {
             if (error.name === 'AbortError') {
                 errorMessage = 'Request timed out. AI analysis takes time - please try again.';
             } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('fetch')) {
-                errorMessage = '🔌 Server is currently down or unreachable. Please try again later or contact support.';
+                errorMessage = '🔌 Cannot connect to server. This could be due to:\n\n• Rate limit exceeded (15 requests per day)\n• Server is temporarily down\n• Network connectivity issues\n\nPlease try again later or reset your daily quota.';
             } else if (error.message.includes('500')) {
                 errorMessage = '⚠️ Server error occurred. Our team has been notified. Please try again in a few minutes.';
+            } else if (error.message.includes('429')) {
+                errorMessage = '⚠️ DAILY LIMIT REACHED (15 requests per day)\n\nYou have used all your daily requests. Please wait until tomorrow to try again, or contact support to reset your quota.';
             } else {
                 errorMessage += error.message;
             }
