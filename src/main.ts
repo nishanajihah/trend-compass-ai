@@ -73,21 +73,26 @@ function initializeApp(): void {
     initializeCharacterCounters();
     initializeValidation();
     
-    // Auto-check API status on load (but only once per session to avoid rate limits)
+    // Auto-check API status on load with better session management
     const hasCheckedThisSession = sessionStorage.getItem('apiChecked');
-    if (!hasCheckedThisSession) {
+    const lastCheckTime = sessionStorage.getItem('lastApiCheck');
+    const now = Date.now();
+    
+    // Only check API if we haven't checked in the last 5 minutes
+    if (!hasCheckedThisSession || !lastCheckTime || (now - parseInt(lastCheckTime)) > 300000) {
         setTimeout(() => {
-            checkAPIStatus();
+            checkAPIStatus(false); // Don't show loading on initial check
             sessionStorage.setItem('apiChecked', 'true');
-        }, 500);
+            sessionStorage.setItem('lastApiCheck', now.toString());
+        }, 1000); // Delayed start to let page load first
     } else {
-        // Just show cached status without making API call
+        // Show cached status without making API call
         const statusElement = elements.apiStatus;
         if (statusElement) {
             const indicator = statusElement.querySelector('.status-indicator');
             const text = statusElement.querySelector('span:last-child');
             if (indicator) indicator.className = 'status-indicator status-warning';
-            if (text) text.textContent = '⚠️ Status check skipped - conserving API requests';
+            if (text) text.textContent = '⚠️ Status cached - click to refresh';
         }
     }
     
@@ -793,7 +798,7 @@ function initializeRateLimitDisplay(): void {
 }
 
 /**
- * Enhanced API status management with better refresh logic
+ * Enhanced API status management with better error handling
  */
 async function checkAPIStatus(showLoadingState: boolean = false): Promise<void> {
     const statusElement = elements.apiStatus;
@@ -801,7 +806,7 @@ async function checkAPIStatus(showLoadingState: boolean = false): Promise<void> 
     
     // Show loading state if requested
     if (showLoadingState && statusElement) {
-        updateAPIStatus('warning', '🔄 Checking connection...');
+        updateAPIStatus('warning', '🔄 Testing connection...');
         if (retryBtn) {
             retryBtn.classList.add('loading');
             const icon = retryBtn.querySelector('i');
@@ -810,52 +815,71 @@ async function checkAPIStatus(showLoadingState: boolean = false): Promise<void> 
     }
     
     try {
-        // Add timeout for connection check
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        // Try multiple endpoints to check API availability
+        const endpoints = ['/health', '/docs', '/'];
+        let apiWorking = false;
+        let lastError = null;
         
-        const response = await fetch(`${API_BASE_URL}/health`, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' },
-            signal: controller.signal
-        });
+        for (const endpoint of endpoints) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                // If we get any successful response (including redirects), API is working
+                if (response.status < 500) {
+                    apiWorking = true;
+                    console.log(`✅ API responding at ${endpoint} with status ${response.status}`);
+                    break;
+                }
+            } catch (endpointError) {
+                lastError = endpointError;
+                console.log(`❌ Endpoint ${endpoint} failed:`, endpointError);
+            }
+        }
         
-        clearTimeout(timeoutId);
-        
-        if (response.ok) {
-            updateAPIStatus('healthy', '🟢 API Connected & Ready');
+        if (apiWorking) {
+            updateAPIStatus('healthy', '🟢 API Available');
             hideServerBanner();
-            
-            // Clear any cached connection issues
             sessionStorage.removeItem('connectionIssue');
             
-            // Show success feedback briefly
             if (showLoadingState) {
                 setTimeout(() => {
                     updateAPIStatus('healthy', '🟢 Connection Restored');
                 }, 500);
             }
         } else {
-            throw new Error(`API health check failed with status ${response.status}`);
+            throw lastError || new Error('All API endpoints failed');
         }
         
     } catch (error) {
         console.warn('⚠️ API connection issue:', error);
         
         // Determine error type for better messaging
-        let errorMessage = '🔴 API Disconnected';
+        let errorMessage = '🔴 API Unavailable';
+        let statusType: 'error' | 'warning' = 'error';
+        
         if (error instanceof Error) {
             if (error.name === 'AbortError') {
-                errorMessage = '🔴 Connection Timeout';
-            } else if (error.message.includes('Failed to fetch')) {
-                errorMessage = '🔴 Network Error';
+                errorMessage = '� Connection Slow';
+                statusType = 'warning';
+            } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                errorMessage = '🔴 Network Issue';
+            } else if (error.message.includes('404')) {
+                errorMessage = '🟡 Server Starting';
+                statusType = 'warning';
             }
         }
         
-        updateAPIStatus('error', errorMessage);
-        showServerBanner();
-        
-        // Cache the connection issue
+        updateAPIStatus(statusType, errorMessage);
+        showServerBanner(error instanceof Error ? error.message : 'Unknown error');
         sessionStorage.setItem('connectionIssue', 'true');
     } finally {
         // Reset loading state
@@ -946,12 +970,42 @@ function hideAudienceResults(): void {
     elements.audienceResults?.classList.add('d-none');
 }
 
-function showServerBanner(): void {
-    elements.serverStatusBanner?.classList.remove('d-none');
+function showServerBanner(errorDetails?: string): void {
+    const banner = elements.serverStatusBanner;
+    if (!banner) return;
+    
+    // Update banner message based on error type
+    const messageSpan = banner.querySelector('.banner-content span');
+    if (messageSpan) {
+        let message = '🚨 Connection Issue Detected';
+        
+        if (errorDetails) {
+            if (errorDetails.includes('404')) {
+                message = '⚠️ Server is starting up or endpoints are unavailable. This is normal during deployment.';
+            } else if (errorDetails.includes('Failed to fetch')) {
+                message = '🌐 Network connectivity issue. Please check your internet connection.';
+            } else if (errorDetails.includes('timeout')) {
+                message = '⏱️ Server response is slow. The service might be under heavy load.';
+            } else {
+                message = '🔧 Server connectivity issue. The API service may be temporarily down.';
+            }
+        }
+        
+        messageSpan.textContent = message;
+    }
+    
+    banner.classList.remove('d-none');
+    
+    // Add attention-grabbing animation
+    banner.style.animation = 'slideDown 0.4s ease-out, pulse 2s infinite 1s';
 }
 
 function hideServerBanner(): void {
-    elements.serverStatusBanner?.classList.add('d-none');
+    const banner = elements.serverStatusBanner;
+    if (banner) {
+        banner.style.animation = '';
+        banner.classList.add('d-none');
+    }
 }
 
 /**
