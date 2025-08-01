@@ -513,11 +513,11 @@ async function analyzeAudience(description: string): Promise<void> {
 /**
  * Display trend analysis results
  */
-function displayTrendResults(analysis: string): void {
+function displayTrendResults(analysis: any): void {
     console.log('📊 Displaying trend results:', analysis); // Debug logging
     
     if (elements.trendResultsContent) {
-        if (!analysis || analysis.trim() === '') {
+        if (!analysis) {
             // Show mock data for testing
             const mockAnalysis = `
             <h4>🚀 Trend Analysis Results</h4>
@@ -535,8 +535,52 @@ function displayTrendResults(analysis: string): void {
             <p>This trend is expected to gain momentum over the next 12 months.</p>
             `;
             elements.trendResultsContent.innerHTML = mockAnalysis;
-        } else {
+        } else if (typeof analysis === 'string') {
+            // Handle string response
             elements.trendResultsContent.innerHTML = formatAnalysisText(analysis);
+        } else {
+            // Handle object response from API
+            const resultsHTML = `
+                <div class="insight-section">
+                    <h4><i class="fas fa-chart-line"></i> Trend Analysis Results</h4>
+                    <p><strong>Query:</strong> ${analysis.query || 'N/A'}</p>
+                    <p><strong>Analysis Date:</strong> ${analysis.timestamp ? new Date(analysis.timestamp).toLocaleString() : 'N/A'}</p>
+                </div>
+                
+                ${analysis.summary ? `
+                    <div class="insight-section">
+                        <h4><i class="fas fa-lightbulb"></i> Summary</h4>
+                        <div class="insight-content">${formatAnalysisText(analysis.summary)}</div>
+                    </div>
+                ` : ''}
+                
+                ${analysis.insights && analysis.insights.length > 0 ? `
+                    <div class="insight-section">
+                        <h4><i class="fas fa-trending-up"></i> Key Insights</h4>
+                        <div class="insight-content">
+                            ${analysis.insights.map((insight: any) => `
+                                <div class="insight-item">
+                                    <strong>${insight.title || insight.category || 'Insight'}</strong>
+                                    <p>${insight.description || insight.content || insight}</p>
+                                    ${insight.confidence ? `<small>Confidence: ${Math.round(insight.confidence * 100)}%</small>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+                
+                ${analysis.recommendations && analysis.recommendations.length > 0 ? `
+                    <div class="insight-section">
+                        <h4><i class="fas fa-star"></i> Recommendations</h4>
+                        <div class="insight-content">
+                            <ul>
+                                ${analysis.recommendations.map((rec: string) => `<li>${rec}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+            elements.trendResultsContent.innerHTML = resultsHTML;
         }
     }
     
