@@ -6,7 +6,8 @@ import os
 from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
 # Load environment variables from .env file in parent directory
@@ -81,6 +82,25 @@ async def rate_limit_middleware(request: Request, call_next):
 
 # Include routers for different endpoints
 app.include_router(trends.router)
+
+# Mount static files (Vite build output)
+dist_path = Path(__file__).parent.parent / "dist"
+if dist_path.exists():
+    app.mount("/assets", StaticFiles(directory=str(dist_path / "assets")), name="assets")
+    
+    @app.get("/{path:path}")
+    async def serve_frontend(path: str):
+        """Serve the frontend for all non-API routes"""
+        # Skip API routes
+        if path.startswith("api/") or path.startswith("docs") or path.startswith("redoc"):
+            return JSONResponse(status_code=404, content={"error": "Not found"})
+        
+        # Serve index.html for SPA routing
+        index_file = dist_path / "index.html"
+        if index_file.exists():
+            return FileResponse(str(index_file))
+        else:
+            return JSONResponse(status_code=404, content={"error": "Frontend not built"})
 
 # Health check endpoint
 @app.get("/", tags=["Health"])
